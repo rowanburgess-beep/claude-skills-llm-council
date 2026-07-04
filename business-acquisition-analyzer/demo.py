@@ -28,6 +28,13 @@ def main():
             print(f"    Multiple: {listing.multiple:.2f}x  vs  {result['sector']} band "
                   f"{low:.2f}/{typ:.2f}/{high:.2f} ({result['sector_basis']}){fallback_note}")
 
+        financing = result["financing"]
+        if financing["dscr"] is not None:
+            print(f"    Financing: DSCR {financing['dscr']:.2f}x, annual debt service "
+                  f"{_fmt_money(financing['annual_debt_service'])} — {financing['risk']}")
+        else:
+            print(f"    Financing: {financing['reason']}")
+
         pillars = result["pillars"]
         pillar_str = "  ".join(f"{name}={score:.0f}" for name, score in pillars.items())
         print(f"    Pillars: {pillar_str}")

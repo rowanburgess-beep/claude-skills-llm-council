@@ -1,17 +1,30 @@
 # NZ Business Acquisition Analyzer
 
 Screens NZ businesses-for-sale against a Ken Mack-style acquisition lens for a
-**truly passive buyer**: manager already in place, owner not working in the
-business, throwing off NZD 200k-300k of manager-adjusted EBITDA at a sensible
-multiple for its sector.
+**truly passive, low/zero-cash-down buyer**: manager already in place, owner
+not working in the business, throwing off NZD 200k-300k of manager-adjusted
+EBITDA at a sensible multiple for its sector - and financeable without a pile
+of cash down.
 
 ## The core idea
 
-NZ main-street listings quote profit as SDE / EBPITD — the owner's own wage is
-added back in. That overstates profit for a buyer who won't work in the
-business. This tool strips a replacement manager's salary back out before
-scoring anything, so a business that only looks profitable because the current
-owner works for free gets scored honestly.
+Two questions, both scored in one place:
+
+1. **Is this actually passive income, priced sensibly?** NZ main-street
+   listings quote profit as SDE / EBPITD — the owner's own wage is added back
+   in. That overstates profit for a buyer who won't work in the business.
+   This tool strips a replacement manager's salary back out before scoring
+   anything, so a business that only looks profitable because the current
+   owner works for free gets scored honestly.
+2. **Can it actually be financed?** A passive buyer usually isn't paying cash.
+   The tool runs a Debt Service Coverage Ratio (DSCR) check: financing the
+   asking price at an assumed rate/term, and checking whether the
+   *manager-adjusted* EBITDA (not the seller's inflated number) can safely
+   cover the loan payment - the same 1.25x DSCR minimum most lenders actually
+   underwrite to.
+
+These aren't two separate tools - a listing only scores well if it clears
+both bars.
 
 ## Setup
 
@@ -45,10 +58,15 @@ streamlit run app.py      # interactive dashboard
 1. Save a search on the broker sites you follow and forward listing emails
    (or paste listing text directly) into the dashboard's "Add a listing" box.
 2. The analyzer computes manager-adjusted EBITDA, scores the five pillars,
-   and slots the listing into SWING / WATCHLIST / PASS.
-3. Drill into any listing to see its pillar breakdown, red flags, and how its
-   asking multiple compares to the NZ sector band.
-4. SWING-tier listings above `ALERT_COMPOSITE_MIN` fire your configured
+   checks financing feasibility (DSCR), and slots the listing into
+   SWING / WATCHLIST / PASS.
+3. Drill into any listing to see its pillar breakdown, DSCR and annual debt
+   service, red flags, and how its asking multiple compares to the NZ sector
+   band.
+4. Tune the loan rate/term/financed-portion sliders to match the actual deal
+   structure you're negotiating - a bigger vendor note or more cash down
+   changes what clears the DSCR bar.
+5. SWING-tier listings above `ALERT_COMPOSITE_MIN` fire your configured
    webhook so you don't have to keep the dashboard open.
 
 ## Honesty caveats — read before you rely on this
@@ -69,6 +87,10 @@ streamlit run app.py      # interactive dashboard
   forwarded email, or saved-search alerts you already receive.
 - **This is a screening filter, not due diligence.** A SWING verdict means
   "worth a serious look," not "worth an offer."
+- **The financing check is a generic assumption, not a pre-approval.** The
+  default 10%/7yr/100%-financed inputs are a reasonable starting point, not
+  what any specific bank or vendor will actually offer you. Tune the sliders
+  to match a real term sheet before treating a PASS/HIGH_RISK verdict as final.
 
 See `BLUEPRINT.md` for how each part of the Ken Mack methodology maps to the
 code.

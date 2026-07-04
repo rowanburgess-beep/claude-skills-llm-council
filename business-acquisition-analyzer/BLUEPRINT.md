@@ -52,22 +52,42 @@ correlate with more room to negotiate).
 
 Recurring revenue and contracts in place mean the business doesn't depend on
 constant new-customer hunting; customer concentration is a risk multiplier
-in the other direction. `score_resilience_fit()` also adds a bonus for
-PipeTech-adjacent sectors (drainage, civil, water infrastructure, etc.) —
-this is the one deliberately personal weighting, reflecting familiarity with
-that space as a buyer.
+in the other direction. `score_resilience_fit()` adds the largest bonus for
+PipeTech-adjacent sectors (drainage, civil, water infrastructure, etc.) — the
+one deliberately personal weighting, reflecting familiarity with that space
+as a buyer — and a smaller bonus for asset-rich/high-barrier B2B sectors more
+broadly (logistics, distribution, manufacturing, wholesale, industrial):
+lenders and vendors both favour these over thin-margin retail/hospitality,
+even outside the PipeTech lane.
 
-## 7. Composite, verdict, and red flags
+## 7. Can you actually finance it? → the DSCR check
+
+A passive buyer usually isn't writing a large cash cheque, so the tool asks a
+question the five pillars never touch: if you financed the purchase, would
+the cash flow cover the loan? `scoring.py: debt_service_feasibility()`
+amortizes a loan on `FINANCED_PORTION` of the asking price at
+`LOAN_INTEREST_RATE` over `LOAN_TERM_YEARS`, then checks whether *passive*
+(manager-adjusted) EBITDA — not the seller's inflated SDE — covers the annual
+payment at `MIN_DSCR` (1.25x, the coverage ratio most lenders actually
+underwrite to). This is deliberately a hard, separate check rather than a
+sixth weighted pillar: a great deal on paper that can't service its own debt
+is a real deal-killer for a low/zero-cash buyer, so a DSCR below 1.0 hard-caps
+the composite score (`score_listing()`), and anything below 1.25 raises a red
+flag naming the shortfall in plain terms.
+
+## 8. Composite, verdict, and red flags
 
 `score_listing()` combines the five pillars via `config.WEIGHTS` (owner
 independence weighted highest — Ken Mack's "don't buy a job" is the
-non-negotiable filter), applies the hard caps, and buckets the result into
+non-negotiable filter), applies the hard caps (unmanaged full-time owner,
+non-positive passive EBITDA, sub-1.0 DSCR), and buckets the result into
 SWING / WATCHLIST / PASS (`config.VERDICT_SWING` / `VERDICT_WATCH`).
 `detect_red_flags()` runs independently of scoring — flags exist to surface
 things a composite score can hide (e.g. a decent score with unverifiable
-earnings basis still gets flagged).
+earnings basis, infeasible financing, or a lending-averse sector still gets
+flagged).
 
-## 8. Compliance boundary
+## 9. Compliance boundary
 
 No scraper exists or should be built against nzbizbuysell,
 businessesforsale.com, ABC Business, Tabak, or Barker Business — their T&Cs

@@ -25,7 +25,14 @@ if "manager_cost" not in st.session_state:
     st.session_state.manager_cost = config.REPLACEMENT_MANAGER_COST
 
 st.title("NZ Business Acquisition Analyzer")
-st.caption("Screening business-for-sale listings against a passive-buyer, Ken Mack-style lens.")
+st.caption("Screening business-for-sale listings against a passive-buyer, low/zero-cash-down lens.")
+
+if "loan_rate" not in st.session_state:
+    st.session_state.loan_rate = config.LOAN_INTEREST_RATE
+if "loan_term" not in st.session_state:
+    st.session_state.loan_term = config.LOAN_TERM_YEARS
+if "financed_portion" not in st.session_state:
+    st.session_state.financed_portion = config.FINANCED_PORTION
 
 # --- Sidebar: calibration dials ---------------------------------------------
 with st.sidebar:
@@ -40,6 +47,28 @@ with st.sidebar:
              "owner's-wage-inflated SDE/EBPITD down to a true passive EBITDA.",
     )
     config.REPLACEMENT_MANAGER_COST = st.session_state.manager_cost
+
+    st.divider()
+    st.subheader("Financing assumptions")
+    st.session_state.loan_rate = st.slider(
+        "Loan interest rate", min_value=0.04, max_value=0.16,
+        value=float(st.session_state.loan_rate), step=0.005, format="%.1f%%",
+        help="Blended bank / vendor-finance rate assumption.",
+    )
+    st.session_state.loan_term = st.slider(
+        "Loan term (years)", min_value=3, max_value=15,
+        value=int(st.session_state.loan_term), step=1,
+        help="NZ acquisition loans commonly run 5-10 years.",
+    )
+    st.session_state.financed_portion = st.slider(
+        "Portion of asking price financed", min_value=0.5, max_value=1.0,
+        value=float(st.session_state.financed_portion), step=0.05, format="%.0f%%",
+        help="1.0 = fully financed (true zero-cash-down). Lower this if you'll put in cash.",
+    )
+    config.LOAN_INTEREST_RATE = st.session_state.loan_rate
+    config.LOAN_TERM_YEARS = st.session_state.loan_term
+    config.FINANCED_PORTION = st.session_state.financed_portion
+    st.caption(f"Minimum DSCR: {config.MIN_DSCR:.2f}x — the coverage ratio most lenders underwrite to.")
 
     st.divider()
     st.caption(f"Target EBITDA band: ${config.TARGET_EBITDA_MIN:,} - ${config.TARGET_EBITDA_MAX:,}")
@@ -90,6 +119,8 @@ for i, result in enumerate(results, start=1):
         "Passive EBITDA": result["passive_ebitda"],
         "Multiple": listing.multiple,
         "NZ Band (low/typ/high)": f"{low:.2f}/{typ:.2f}/{high:.2f} ({result['sector_basis']})",
+        "DSCR": result["financing"]["dscr"],
+        "Financing": result["financing"]["risk"],
         "# Flags": len(result["red_flags"]),
     })
 
@@ -125,6 +156,16 @@ if selected_name:
             st.metric("Multiple", f"{listing.multiple:.2f}x")
         fallback_note = " (fallback estimate — replace with real comps)" if result["sector_band_is_fallback"] else ""
         st.caption(f"Sector band ({result['sector_basis']}): {low:.2f} / {typ:.2f} / {high:.2f}{fallback_note}")
+
+        st.divider()
+        financing = result["financing"]
+        if financing["dscr"] is not None:
+            st.metric("DSCR", f"{financing['dscr']:.2f}x", delta=financing["risk"], delta_color="off")
+            st.caption(f"Annual debt service: ${financing['annual_debt_service']:,.0f} "
+                       f"at {config.LOAN_INTEREST_RATE:.1%}/{config.LOAN_TERM_YEARS}yr, "
+                       f"{config.FINANCED_PORTION:.0%} financed")
+        else:
+            st.caption(f"Financing: {financing['reason']}")
 
     st.markdown("**Red flags**")
     if result["red_flags"]:

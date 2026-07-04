@@ -1,8 +1,9 @@
-"""Ken Mack-style acquisition scoring for a passive NZ buyer.
+"""Ken Mack-style acquisition scoring for a passive, low/zero-cash-down NZ buyer.
 
-Five pillars (0-100 each), weighted into a composite, plus hard caps for
-deal-killer situations and a red-flag detector. Nothing here talks to a
-network or a database - it's pure functions over a Listing.
+Five weighted pillars (0-100 each), a Debt Service Coverage Ratio (DSCR)
+financing-feasibility check on top, hard caps for deal-killer situations, and
+a red-flag detector. Nothing here talks to a network or a database - it's
+pure functions over a Listing.
 """
 
 from typing import List
@@ -13,7 +14,7 @@ from nz_benchmarks import SECTOR_BANDS, get_benchmark, match_sector
 
 MOTIVATED_SELLER_TERMS = [
     "retire", "ill health", "illness", "relocat", "must sell", "succession",
-    "estate", "divorce",
+    "estate", "divorce", "no partner",
 ]
 KEY_PERSON_TERMS = ["owner-operator", "owner operator", "hands-on", "hands on", "key person"]
 PASSIVE_LANGUAGE_TERMS = ["manager in place", "fully staffed", "semi-passive", "semi passive", "absentee"]
@@ -153,11 +154,56 @@ def score_resilience_fit(listing: Listing) -> float:
     text = f"{listing.sector} {listing.raw_text} {listing.notes}".lower()
     if any(keyword in text for keyword in config.PIPETECH_KEYWORDS):
         score += 20
+    elif any(keyword in text for keyword in config.ASSET_RICH_B2B_KEYWORDS):
+        score += 10
 
     return _clamp(score)
 
 
-def detect_red_flags(listing: Listing, passive_ebitda: float) -> List[str]:
+def amortized_annual_payment(principal: float, annual_rate: float = None, years: int = None) -> float:
+    """Standard monthly-amortized loan payment, annualized."""
+    annual_rate = config.LOAN_INTEREST_RATE if annual_rate is None else annual_rate
+    years = config.LOAN_TERM_YEARS if years is None else years
+    n_payments = years * 12
+    monthly_rate = annual_rate / 12
+    if monthly_rate == 0:
+        return principal / years
+    monthly_payment = principal * monthly_rate / (1 - (1 + monthly_rate) ** -n_payments)
+    return monthly_payment * 12
+
+
+def debt_service_feasibility(listing: Listing, passive_ebitda: float) -> dict:
+    """Can a low/zero-cash-down purchase actually service its own debt?
+
+    Finances FINANCED_PORTION of the asking price at LOAN_INTEREST_RATE over
+    LOAN_TERM_YEARS, then checks whether *passive* (manager-adjusted) EBITDA
+    covers the annual payment at MIN_DSCR - the coverage ratio most lenders
+    underwrite to. Using passive EBITDA rather than raw reported earnings
+    matters: a manager's wage already comes out of the cash flow before the
+    loan gets serviced, for a genuinely passive buyer.
+    """
+    if not listing.asking_price:
+        return {"risk": "UNKNOWN", "reason": "Missing asking price - can't compute debt service.",
+                "annual_debt_service": None, "dscr": None}
+
+    loan_amount = listing.asking_price * config.FINANCED_PORTION
+    annual_debt_service = amortized_annual_payment(loan_amount)
+    dscr = passive_ebitda / annual_debt_service if annual_debt_service else None
+    feasible = dscr is not None and dscr >= config.MIN_DSCR
+
+    return {
+        "risk": "PASS" if feasible else "HIGH_RISK",
+        "reason": (
+            f"DSCR {dscr:.2f}x >= {config.MIN_DSCR:.2f}x minimum"
+            if feasible
+            else f"DSCR {dscr:.2f}x < {config.MIN_DSCR:.2f}x minimum - passive EBITDA can't safely cover the loan"
+        ),
+        "annual_debt_service": round(annual_debt_service, 0),
+        "dscr": round(dscr, 2) if dscr is not None else None,
+    }
+
+
+def detect_red_flags(listing: Listing, passive_ebitda: float, financing: dict = None) -> List[str]:
     flags = []
     text = f"{listing.raw_text} {listing.notes}"
 
@@ -173,6 +219,17 @@ def detect_red_flags(listing: Listing, passive_ebitda: float) -> List[str]:
         flags.append("Listing language suggests declining performance - dig into recent trend before proceeding.")
     if passive_ebitda < config.EBITDA_FLOOR:
         flags.append(f"Manager-adjusted EBITDA (${passive_ebitda:,.0f}) is below the ${config.EBITDA_FLOOR:,.0f} floor.")
+    if financing and financing["risk"] == "HIGH_RISK":
+        flags.append(
+            f"Financing looks infeasible at {config.LOAN_INTEREST_RATE:.0%}/{config.LOAN_TERM_YEARS}yr on "
+            f"{config.FINANCED_PORTION:.0%} financed ({financing['reason']}) - would need more cash down, "
+            f"better terms, or a bigger vendor note."
+        )
+    if listing.sector in config.LENDING_CAUTION_SECTORS:
+        flags.append(
+            "Retail/hospitality businesses are historically harder to finance affordably (thin asset base, "
+            "higher failure rates) - expect tighter lender terms than assumed here."
+        )
 
     return flags
 
@@ -203,11 +260,15 @@ def score_listing(listing: Listing) -> dict:
 
     composite = sum(pillars[name] * weight for name, weight in config.WEIGHTS.items())
 
-    # Hard caps - deal-killers for a passive buyer, regardless of weighted score.
+    financing = debt_service_feasibility(listing, passive_ebitda)
+
+    # Hard caps - deal-killers for a passive, low/zero-cash-down buyer, regardless of weighted score.
     if listing.owner_involvement == "full_time" and not listing.manager_in_place:
         composite = min(composite, 45)
     if passive_ebitda <= 0:
         composite = min(composite, 25)
+    if financing["dscr"] is not None and financing["dscr"] < 1.0:
+        composite = min(composite, 35)  # can't even fully cover the loan payment from passive cash flow
 
     if composite >= config.VERDICT_SWING:
         verdict = "SWING"
@@ -216,7 +277,7 @@ def score_listing(listing: Listing) -> dict:
     else:
         verdict = "PASS"
 
-    red_flags = detect_red_flags(listing, passive_ebitda)
+    red_flags = detect_red_flags(listing, passive_ebitda, financing)
 
     return {
         "listing": listing,
@@ -227,6 +288,7 @@ def score_listing(listing: Listing) -> dict:
         "sector_band": (low, typ, high),
         "sector_band_is_fallback": is_fallback,
         "pillars": pillars,
+        "financing": financing,
         "composite": round(composite, 1),
         "verdict": verdict,
         "red_flags": red_flags,
