@@ -139,4 +139,31 @@ SAMPLE_LISTINGS = [
             "health and open to vendor finance to get a deal done quickly."
         ),
     ),
+    Listing(
+        name="Coin-Operated Laundromat (2 sites)",
+        source="sample",
+        sector="self_service_essential",
+        region="Auckland",
+        asking_price=680_000,
+        revenue=380_000,
+        earnings_value=210_000,
+        earnings_basis="EBITDA",
+        owner_involvement="absentee",
+        manager_in_place=False,
+        staff_count=0,
+        years_established=8,
+        reason_for_sale="Owner relocating overseas",
+        vendor_finance_offered=False,
+        days_on_market=70,
+        customer_concentration_pct=None,
+        recurring_revenue=True,
+        contracts_in_place=False,
+        raw_text=(
+            "Two fully self-service, coin-operated laundromats with no staff "
+            "required - machines are card/coin-operated and serviced by a "
+            "contract technician once a fortnight. Genuinely unmanned operation "
+            "with steady, repeat local walk-in trade. Owner relocating overseas "
+            "and open to a quick settlement."
+        ),
+    ),
 ]

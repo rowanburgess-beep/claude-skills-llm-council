@@ -17,7 +17,11 @@ MOTIVATED_SELLER_TERMS = [
     "estate", "divorce", "no partner",
 ]
 KEY_PERSON_TERMS = ["owner-operator", "owner operator", "hands-on", "hands on", "key person"]
-PASSIVE_LANGUAGE_TERMS = ["manager in place", "fully staffed", "semi-passive", "semi passive", "absentee"]
+PASSIVE_LANGUAGE_TERMS = [
+    "manager in place", "fully staffed", "semi-passive", "semi passive", "absentee",
+    "unmanned", "coin-operated", "coin operated", "self-service", "self service",
+    "no staff required", "no staff needed",
+]
 DECLINE_TERMS = ["declining", "down on last year", "down on prior year", "lost a contract", "lost contract"]
 
 OWNER_INVOLVEMENT_BASE = {
@@ -132,8 +136,11 @@ def score_deal_structure(listing: Listing) -> float:
         score += 25
     if listing.days_on_market is not None and listing.days_on_market > 120:
         score += 10
-    if listing.years_established is not None and listing.years_established >= 10:
-        score += 5
+    if listing.years_established is not None:
+        if listing.years_established >= config.YEARS_ESTABLISHED_PROVEN_THRESHOLD:
+            score += 10  # a genuinely proven, long-run track record
+        elif listing.years_established >= config.YEARS_ESTABLISHED_BONUS_THRESHOLD:
+            score += 5
     return _clamp(score)
 
 
@@ -152,10 +159,16 @@ def score_resilience_fit(listing: Listing) -> float:
             score -= 20
 
     text = f"{listing.sector} {listing.raw_text} {listing.notes}".lower()
-    if any(keyword in text for keyword in config.PIPETECH_KEYWORDS):
+    # PipeTech bolt-on synergy and pure self-running/essential diversification
+    # are two distinct, equally valid theses - either earns the larger bonus.
+    if any(keyword in text for keyword in config.PIPETECH_KEYWORDS) or \
+            any(keyword in text for keyword in config.ESSENTIAL_SELF_RUN_KEYWORDS):
         score += 20
     elif any(keyword in text for keyword in config.ASSET_RICH_B2B_KEYWORDS):
         score += 10
+
+    if _contains_any(text, DECLINE_TERMS):
+        score -= 25  # a declining service is the opposite of resilient
 
     return _clamp(score)
 
@@ -229,6 +242,11 @@ def detect_red_flags(listing: Listing, passive_ebitda: float, financing: dict = 
         flags.append(
             "Retail/hospitality businesses are historically harder to finance affordably (thin asset base, "
             "higher failure rates) - expect tighter lender terms than assumed here."
+        )
+    if listing.years_established is not None and listing.years_established < config.YOUNG_BUSINESS_THRESHOLD:
+        flags.append(
+            f"Only {listing.years_established} years trading - a shorter track record than the "
+            f"{config.YEARS_ESTABLISHED_PROVEN_THRESHOLD}+ year, proven businesses you're prioritizing."
         )
 
     return flags

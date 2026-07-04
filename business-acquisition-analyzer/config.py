@@ -31,6 +31,11 @@ assert abs(sum(WEIGHTS.values()) - 1.0) < 1e-9, "WEIGHTS must sum to 1.0"
 VERDICT_SWING = 70
 VERDICT_WATCH = 50
 
+# --- Track record (years trading) -------------------------------------------
+YEARS_ESTABLISHED_BONUS_THRESHOLD = 10   # some credit for an established business
+YEARS_ESTABLISHED_PROVEN_THRESHOLD = 15  # full credit for a genuinely proven track record
+YOUNG_BUSINESS_THRESHOLD = 5             # below this, flag the shorter operating history
+
 # --- Financing feasibility (low/zero-cash-down acquisition test) -----------
 # Can the manager-adjusted (passive) EBITDA actually service a loan on the
 # asking price? This is a Debt Service Coverage Ratio (DSCR) test: financing
@@ -46,11 +51,22 @@ MIN_DSCR = 1.25             # minimum coverage ratio most lenders underwrite to
 # --- Alerting ----------------------------------------------------------------
 ALERT_COMPOSITE_MIN = 70
 
-# --- PipeTech-relevant keywords (largest bonus in resilience_fit pillar) ---
+# --- PipeTech-relevant keywords (bolt-on synergy with the buyer's existing
+# civil/drainage business - largest bonus in resilience_fit pillar) ---------
 PIPETECH_KEYWORDS = [
     "drainage", "civil", "water", "three waters", "pipeline", "trenchless",
     "infrastructure", "council", "wastewater", "stormwater", "excavation",
     "contracting", "plumbing",
+]
+
+# --- Self-running / essential brick-and-mortar keywords (separate thesis:
+# pure passive diversification rather than a PipeTech bolt-on - same bonus
+# weight in resilience_fit, since it's an equally valid target archetype) --
+ESSENTIAL_SELF_RUN_KEYWORDS = [
+    "laundromat", "coin laundry", "self-service laundry", "self serve laundry",
+    "self storage", "storage units", "storage facility",
+    "vending machine", "vending route", "car wash",
+    "unmanned", "coin-operated", "coin operated",
 ]
 
 # --- Broader asset-rich / high-barrier B2B keywords (smaller bonus) --------

@@ -12,6 +12,7 @@ sector_key: (basis, low, typ, high)
 SECTOR_BANDS = {
     "hospitality_cafe":       ("SDE",    1.5, 2.25, 3.0),
     "retail":                 ("SDE",    2.0, 2.75, 3.5),
+    "self_service_essential": ("SDE",    2.5, 3.25, 4.0),
     "trade_services":         ("SDE",    2.5, 3.25, 4.0),
     "civil_construction":     ("EBITDA", 2.5, 3.25, 4.5),
     "water_infrastructure":   ("EBITDA", 3.0, 4.0,  5.5),
@@ -33,6 +34,11 @@ FALLBACK_SECTOR = "general_sme"
 SECTOR_KEYWORDS = {
     "hospitality_cafe": ["cafe", "coffee shop", "restaurant", "bar", "hospitality", "takeaway", "catering", "eatery"],
     "retail": ["retail", "shop", "store", "boutique"],
+    "self_service_essential": [
+        "laundromat", "coin laundry", "self-service laundry", "self serve laundry",
+        "self storage", "storage units", "storage facility",
+        "vending machine", "vending route", "car wash",
+    ],
     "trade_services": ["trade", "electrician", "builder", "plumber", "handyman", "landscaping", "painter", "roofing"],
     "civil_construction": ["civil", "construction", "earthworks", "roading", "contracting"],
     "water_infrastructure": ["three waters", "wastewater", "stormwater", "pipeline", "trenchless", "drainage", "water infrastructure"],
