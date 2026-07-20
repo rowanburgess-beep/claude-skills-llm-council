@@ -1,0 +1,10 @@
+pandas>=2.0
+streamlit>=1.32
+python-dotenv>=1.0
+
+# Optional: only needed if you set ANTHROPIC_API_KEY for LLM-assisted parsing.
+# Without it, parser.py falls back to offline regex/keyword extraction.
+anthropic>=0.34
+
+# Optional: only needed if you set DATABASE_URL for Postgres persistence (db.py).
+psycopg2-binary>=2.9
