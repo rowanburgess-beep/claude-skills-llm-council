@@ -1,0 +1,518 @@
+<title>PipeTech OS Prototype</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: app shell — sidebar nav on desktop, scrolling tab strip on phones; one view at a time, routed by hash. */
+:root{
+  --bg:#F2F1EF; --surface:#FFFFFF; --surface-2:#E8E6E3; --fg:#1C1A18; --muted:#5E5953;
+  --line:#D5D1CC; --brand:#65FF00; --on-brand:#272422; --accent-text:#2E7D00;
+  --ink:#272422; --on-ink:#FFFFFF;
+  --ok:#2E7D00; --warn:#A65F00; --bad:#B3261E; --info:#1F5FA8;
+  --ok-bg:#E4F5D6; --warn-bg:#FCEBD2; --bad-bg:#F9DEDC; --info-bg:#DDE8F6;
+  --font:"Switzer",-apple-system,"Segoe UI",Roboto,system-ui,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#151312; --surface:#211F1D; --surface-2:#2C2926; --fg:#F2F1EF; --muted:#A8A39D;
+  --line:#3A3632; --brand:#65FF00; --on-brand:#272422; --accent-text:#65FF00;
+  --ink:#0E0D0C; --on-ink:#F2F1EF;
+  --ok:#7DFF3A; --warn:#FFB547; --bad:#FF8A80; --info:#8AB8FF;
+  --ok-bg:#1F3313; --warn-bg:#3A2A10; --bad-bg:#3D1B19; --info-bg:#172A42; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#151312; --surface:#211F1D; --surface-2:#2C2926; --fg:#F2F1EF; --muted:#A8A39D;
+  --line:#3A3632; --brand:#65FF00; --on-brand:#272422; --accent-text:#65FF00;
+  --ink:#0E0D0C; --on-ink:#F2F1EF;
+  --ok:#7DFF3A; --warn:#FFB547; --bad:#FF8A80; --info:#8AB8FF;
+  --ok-bg:#1F3313; --warn-bg:#3A2A10; --bad-bg:#3D1B19; --info-bg:#172A42; color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+a{color:var(--accent-text);font-weight:600;text-underline-offset:2px}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--ink)}
+.mono{font-family:var(--mono);font-size:.92em}
+.num{font-variant-numeric:tabular-nums}
+h1,h2,h3{margin:0;text-wrap:balance;line-height:1.2}
+h1{font-size:clamp(22px,3vw,30px);font-weight:700;letter-spacing:-.01em}
+h2{font-size:18px;font-weight:650}
+h3{font-size:15px;font-weight:650}
+p{margin:0}
+.muted{color:var(--muted)}
+.eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+
+/* Shell */
+.app{display:grid;grid-template-columns:232px 1fr;min-height:100%}
+.side{background:var(--ink);color:var(--on-ink);padding:20px 14px;padding-left:max(14px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:20px;position:sticky;top:env(safe-area-inset-top,0px);height:100vh}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px;padding:0 6px}
+.logo svg{flex:none}
+.logo small{display:block;font-weight:500;font-size:11px;color:#A8A39D;letter-spacing:.08em;text-transform:uppercase}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav a{color:#D8D5D1;text-decoration:none;padding:10px 12px;border-radius:8px;display:flex;align-items:center;gap:10px;font-weight:500;min-height:44px}
+.nav a:hover{background:#2C2926;color:#fff}
+.nav a[aria-current="page"]{background:#2C2926;color:#fff;box-shadow:inset 3px 0 0 #65FF00}
+.nav svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;flex:none}
+.nav a[aria-current="page"] svg{stroke:#65FF00}
+.side .foot{margin-top:auto;font-size:12px;color:#A8A39D;padding:0 6px}
+main{min-width:0;padding-block:24px 48px;padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px))}
+.banner{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--surface-2);border-radius:8px;padding:8px 12px;font-size:13px;color:var(--muted);margin-bottom:20px}
+.banner b{color:var(--fg)}
+.view{display:flex;flex-direction:column;gap:20px;max-width:1200px}
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.head .actions{display:flex;gap:8px;flex-wrap:wrap}
+
+/* Controls */
+.btn{font:inherit;font-weight:650;border-radius:8px;padding:10px 16px;min-height:44px;border:1px solid transparent;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:filter .15s,transform .15s}
+.btn:hover{filter:brightness(1.08);transform:scale(1.02)}
+.btn:focus-visible,.nav a:focus-visible,.chip:focus-visible,input:focus-visible,button:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.btn-primary{background:var(--brand);color:var(--on-brand)}
+.btn-secondary{background:transparent;border-color:var(--accent-text);color:var(--accent-text)}
+.btn-dark{background:var(--ink);color:var(--on-ink)}
+.chip{font:inherit;font-size:13px;font-weight:600;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:999px;padding:6px 12px;cursor:pointer;min-height:36px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
+input[type="search"],input[type="text"]{font:inherit;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;min-height:44px;width:100%}
+
+/* Status pills */
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:650;border-radius:999px;padding:3px 10px;white-space:nowrap}
+.pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.ok{color:var(--ok);background:var(--ok-bg)} .warn{color:var(--warn);background:var(--warn-bg)}
+.bad{color:var(--bad);background:var(--bad-bg)} .info{color:var(--info);background:var(--info-bg)}
+.neutral{color:var(--muted);background:var(--surface-2)}
+
+/* Panels */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;min-width:0}
+.panel > h2{margin-bottom:12px}
+.grid{display:grid;gap:16px}
+.g-kpi{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.g-2{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr)}
+.g-3{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+@media (max-width:900px){.g-2{grid-template-columns:minmax(0,1fr)}}
+
+.kpi{display:flex;flex-direction:column;gap:6px}
+.kpi .v{font-size:28px;font-weight:700;letter-spacing:-.02em}
+.kpi .d{font-size:13px}
+.spark{width:100%;height:36px;display:block}
+
+/* Lists & tables */
+.list{display:flex;flex-direction:column}
+.list > div{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--line)}
+.list > div:first-child{border-top:0;padding-top:0}
+.list .grow{flex:1;min-width:0}
+.tbl-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:10px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+td.r,th.r{text-align:right}
+
+/* Crew board */
+.board{display:grid;grid-template-columns:110px repeat(5,minmax(110px,1fr));gap:6px;min-width:680px}
+.board .hd{font-size:12px;color:var(--muted);font-weight:600;padding:4px}
+.board .crew{font-weight:650;font-size:13px;padding:8px 4px}
+.slot{border-radius:6px;padding:6px 8px;font-size:12px;line-height:1.3;border:1px solid var(--line);background:var(--surface-2)}
+.slot b{display:block;font-size:12px}
+.slot.f{border-left:3px solid var(--brand)}
+.slot.off{background:transparent;border-style:dashed;color:var(--muted)}
+
+/* Job cards (kanban) */
+.kanban{display:grid;grid-template-columns:repeat(5,minmax(220px,1fr));gap:12px;min-width:1140px}
+.col{background:var(--surface-2);border-radius:var(--r);padding:10px;display:flex;flex-direction:column;gap:10px}
+.col h3{display:flex;justify-content:space-between;font-size:13px;padding:2px 4px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.card .meta{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--muted)}
+.hp{display:flex;gap:4px;flex-wrap:wrap}
+.hp span{width:18px;height:6px;border-radius:3px;background:var(--line)}
+.hp span.c{background:var(--ok)}
+.hp span.x{background:var(--bad)}
+.blocker{font-size:12px;color:var(--bad);font-weight:600}
+
+/* Trace timeline */
+.stages{display:grid;grid-template-columns:repeat(14,minmax(64px,1fr));gap:4px;min-width:900px}
+.stage{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;font-size:11px;color:var(--muted)}
+.stage .dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--line);background:var(--surface);display:grid;place-items:center}
+.stage.done .dot{background:var(--brand);border-color:var(--brand)}
+.stage.done .dot::after{content:"";width:8px;height:5px;border:2px solid var(--on-brand);border-top:0;border-right:0;transform:rotate(-45deg) translate(1px,-1px)}
+.stage.now .dot{border-color:var(--accent-text);box-shadow:0 0 0 4px var(--ok-bg)}
+.stage.now{color:var(--fg);font-weight:650}
+.bar{height:4px;background:var(--line);border-radius:2px;margin:-27px 11px 23px;min-width:878px;position:relative;z-index:0}
+.bar i{display:block;height:100%;background:var(--brand);border-radius:2px}
+.stages{position:relative;z-index:1}
+.events{display:flex;flex-direction:column}
+.ev{display:grid;grid-template-columns:120px 1fr;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+.ev:first-child{border-top:0}
+.ev time{font-size:13px;color:var(--muted)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font-size:14px}
+.kv dt{color:var(--muted)} .kv dd{margin:0}
+.meter{height:10px;background:var(--surface-2);border-radius:5px;overflow:hidden;display:flex}
+.meter i{display:block;height:100%}
+
+/* Asset passport */
+.pipe{width:100%;height:auto;display:block}
+
+/* Phone */
+.phone-wrap{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start}
+.phone{width:360px;max-width:100%;border-radius:36px;background:var(--ink);padding:12px;box-shadow:0 20px 40px rgba(0,0,0,.25)}
+.screen{background:#151312;color:#F2F1EF;border-radius:26px;overflow:hidden;min-height:640px;display:flex;flex-direction:column}
+.screen .top{padding:18px 18px 12px;display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#A8A39D}
+.screen .offline{color:#FFB547;font-weight:600}
+.screen .job{padding:0 18px 14px}
+.screen .job h3{font-size:18px;color:#fff}
+.steps{display:flex;flex-direction:column;gap:8px;padding:0 14px 14px;flex:1}
+.step{display:flex;align-items:center;gap:12px;background:#211F1D;border:1px solid #3A3632;border-radius:12px;padding:12px;min-height:56px}
+.step .ic{width:28px;height:28px;border-radius:50%;border:2px solid #5E5953;flex:none;display:grid;place-items:center;font-size:12px;font-weight:700;color:#A8A39D}
+.step.done .ic{background:#65FF00;border-color:#65FF00;color:#272422}
+.step.cur{border-color:#65FF00}
+.step.cur .ic{border-color:#65FF00;color:#65FF00}
+.step.lock{opacity:.5}
+.step small{display:block;color:#A8A39D;font-size:12px}
+.screen .cta{padding:14px;border-top:1px solid #3A3632}
+.screen .cta button{width:100%;justify-content:center;min-height:52px;font-size:16px}
+.note{max-width:420px;display:flex;flex-direction:column;gap:12px}
+
+/* Portal */
+.prog{display:flex;flex-direction:column;gap:8px}
+
+@media (max-width:820px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{position:sticky;top:env(safe-area-inset-top,0px);height:auto;flex-direction:row;align-items:center;gap:8px;padding:8px max(16px,env(safe-area-inset-right,0px)) 8px max(16px,env(safe-area-inset-left,0px));z-index:5;overflow-x:auto}
+  .logo small,.side .foot{display:none}
+  .logo span{display:none}
+  .nav{flex-direction:row}
+  .nav a{white-space:nowrap;padding:8px 10px}
+  .nav a[aria-current="page"]{box-shadow:inset 0 -3px 0 #65FF00}
+  main{padding-block:16px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .ev{grid-template-columns:1fr;gap:2px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="app">
+  <aside class="side">
+    <div class="logo">
+      <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="7" fill="#65FF00"/><circle cx="15" cy="15" r="8" fill="none" stroke="#272422" stroke-width="3"/><circle cx="15" cy="15" r="3" fill="#272422"/></svg>
+      <span>PipeTech OS<small>Prototype v0.1</small></span>
+    </div>
+    <nav class="nav" aria-label="Main">
+      <a href="#today"><svg viewBox="0 0 24 24"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>Today</a>
+      <a href="#jobs"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="5" height="16" rx="1"/><rect x="10" y="4" width="5" height="10" rx="1"/><rect x="17" y="4" width="4" height="13" rx="1"/></svg>Jobs</a>
+      <a href="#trace"><svg viewBox="0 0 24 24"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4z"/><path d="M14 14h2v2h-2zM18 18h2v2h-2zM14 18h2M18 14h2"/></svg>Product tracking</a>
+      <a href="#asset"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><path d="M7 12h10"/></svg>Pipe passport</a>
+      <a href="#field"><svg viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>Field app</a>
+      <a href="#portal"><svg viewBox="0 0 24 24"><path d="M3 21h18M5 21V9l7-5 7 5v12"/><path d="M10 21v-6h4v6"/></svg>Council portal</a>
+    </nav>
+    <div class="foot">Sample data only. No real clients, staff or jobs.</div>
+  </aside>
+
+  <main>
+    <div class="banner"><b>Prototype</b> Clickable concept for discussion. All names, numbers and records are made-up examples.</div>
+
+    <!-- TODAY -->
+    <section class="view" id="v-today" hidden>
+      <div class="head">
+        <div><p class="eyebrow">Wednesday 28 October</p><h1>Morning, Rowan</h1></div>
+        <div class="actions"><button class="btn btn-secondary" type="button">Export week</button><button class="btn btn-primary" type="button">+ New job</button></div>
+      </div>
+      <div class="grid g-kpi">
+        <div class="panel kpi"><span class="eyebrow">Metres lined, this week</span><span class="v num">412 m</span><span class="d muted">Target 480 m · 86%</span><svg class="spark" viewBox="0 0 120 36" preserveAspectRatio="none" aria-hidden="true"><path d="M0 30 L20 24 L40 26 L60 15 L80 18 L100 10 L120 12 L120 36 L0 36Z" fill="var(--ok-bg)"/><path d="M0 30 L20 24 L40 26 L60 15 L80 18 L100 10 L120 12" fill="none" stroke="var(--accent-text)" stroke-width="2"/><circle cx="120" cy="12" r="3" fill="var(--accent-text)"/></svg></div>
+        <div class="panel kpi"><span class="eyebrow">Crew utilisation</span><span class="v num">78%</span><span class="d muted">Crew C stood down Tue (rain)</span><div class="meter" aria-hidden="true"><i style="width:78%;background:var(--brand)"></i></div></div>
+        <div class="panel kpi"><span class="eyebrow">Work in progress</span><span class="v num">$186k</span><span class="d"><span class="pill warn">$41k unbilled &gt; 30 days</span></span></div>
+        <div class="panel kpi"><span class="eyebrow">Open hold points</span><span class="v num">7</span><span class="d"><span class="pill bad">2 blocking tomorrow</span></span></div>
+        <div class="panel kpi"><span class="eyebrow">Safety</span><span class="v num">100%</span><span class="d muted">Pre-starts done today · 1 near-miss logged</span></div>
+      </div>
+      <div class="grid g-2">
+        <div class="panel">
+          <h2>Needs your attention</h2>
+          <div class="list">
+            <div><span class="pill bad">Blocked</span><div class="grow"><b>J26-0142</b> MH-0231 → MH-0232 has no pre-install CCTV. Install planned tomorrow.<p class="muted">Crew A can CCTV it today at 2pm. <a href="#jobs">Open job</a></p></div></div>
+            <div><span class="pill warn">Stock</span><div class="grow"><b>DN225 liner cover is 2.5 weeks.</b> Next container is 3 days late (ETA 18 Nov).<p class="muted">Forecast need: 340 m by 30 Nov. <a href="#trace">View inbound</a></p></div></div>
+            <div><span class="pill warn">People</span><div class="grow"><b>2 confined-space tickets expire within 30 days.</b><p class="muted">Book refresher before 20 Nov.</p></div></div>
+            <div><span class="pill info">QA</span><div class="grow"><b>3 QA packs ready for review.</b> Auto-built from field records.<p class="muted">Average 2 days from install to pack this month.</p></div></div>
+            <div><span class="pill ok">Cash</span><div class="grow"><b>Progress claim #4 drafted in Xero</b> for 186 m completed on Sample DC Pkg 3.<p class="muted">Approve to send.</p></div></div>
+          </div>
+        </div>
+        <div class="panel">
+          <h2>Liner yield (last 90 days)</h2>
+          <p class="muted" style="margin-bottom:12px">Metres received vs where they went</p>
+          <div class="meter" style="height:18px" aria-hidden="true"><i style="width:88%;background:var(--brand)"></i><i style="width:5%;background:var(--muted)"></i><i style="width:4%;background:var(--warn)"></i><i style="width:3%;background:var(--bad)"></i></div>
+          <dl class="kv" style="margin-top:14px">
+            <dt>Installed</dt><dd class="num">2,640 m · 88%</dd>
+            <dt>Offcuts back in stock</dt><dd class="num">150 m · 5%</dd>
+            <dt>Scrap (logged reasons)</dt><dd class="num">120 m · 4%</dd>
+            <dt>Unaccounted</dt><dd class="num" style="color:var(--bad);font-weight:650">90 m · 3% · investigate</dd>
+          </dl>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>Crew board, this week</h2>
+        <div class="tbl-wrap">
+          <div class="board">
+            <div class="hd"></div><div class="hd">Mon 26</div><div class="hd">Tue 27</div><div class="hd">Wed 28</div><div class="hd">Thu 29</div><div class="hd">Fri 30</div>
+            <div class="crew">Crew A<br><span class="muted" style="font-weight:400">Fold &amp; form</span></div>
+            <div class="slot f"><b>J26-0142</b>DN150 · 58 m</div><div class="slot f"><b>J26-0142</b>DN150 · 62 m</div><div class="slot f"><b>J26-0142</b>CCTV + prep</div><div class="slot f"><b>J26-0142</b>DN150 · 2 runs</div><div class="slot f"><b>J26-0142</b>Reinstate laterals</div>
+            <div class="crew">Crew B<br><span class="muted" style="font-weight:400">Patch / TopHat</span></div>
+            <div class="slot"><b>J26-0139</b>4 TopHats</div><div class="slot"><b>J26-0139</b>3 TopHats</div><div class="slot"><b>J26-0144</b>CIPP patches</div><div class="slot"><b>J26-0144</b>CIPP patches</div><div class="slot off">Plant service</div>
+            <div class="crew">Crew C<br><span class="muted" style="font-weight:400">CCTV &amp; jetting</span></div>
+            <div class="slot"><b>J26-0145</b>Jet + CCTV</div><div class="slot off">Rain stand-down</div><div class="slot"><b>J26-0145</b>Jet + CCTV</div><div class="slot"><b>J26-0147</b>Pre-CCTV</div><div class="slot"><b>J26-0147</b>Pre-CCTV</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- JOBS -->
+    <section class="view" id="v-jobs" hidden>
+      <div class="head">
+        <div><p class="eyebrow">Jobs</p><h1>Job board</h1><p class="muted">Columns are calculated from hold points. Nobody drags a card to "Ready".</p></div>
+        <div class="actions" role="group" aria-label="Filter by method">
+          <button class="chip" type="button" aria-pressed="true" data-f="all">All</button>
+          <button class="chip" type="button" aria-pressed="false" data-f="ff">Fold &amp; form</button>
+          <button class="chip" type="button" aria-pressed="false" data-f="patch">Patch / TopHat</button>
+          <button class="chip" type="button" aria-pressed="false" data-f="cctv">CCTV / jetting</button>
+        </div>
+      </div>
+      <div class="tbl-wrap"><div class="kanban" id="kanban"></div></div>
+    </section>
+
+    <!-- TRACE -->
+    <section class="view" id="v-trace" hidden>
+      <div class="head">
+        <div><p class="eyebrow">Supply chain</p><h1>Product tracking</h1><p class="muted">Scan or type a unit label, batch lot or asset ID.</p></div>
+        <div class="actions" style="min-width:min(100%,360px)"><label class="eyebrow" for="q" hidden>Search</label><input id="q" type="search" placeholder="e.g. PT-R-26-00417" value="PT-R-26-00417"></div>
+      </div>
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,auto));justify-content:start;gap:8px" role="group" aria-label="Sample units">
+        <button class="chip" type="button" data-u="PT-R-26-00417" aria-pressed="true">Reel PT-R-26-00417</button>
+        <button class="chip" type="button" data-u="PT-R-26-00433" aria-pressed="false">Reel PT-R-26-00433</button>
+        <button class="chip" type="button" data-u="PT-K-26-01102" aria-pressed="false">Resin kit PT-K-26-01102</button>
+      </div>
+      <div class="panel">
+        <div class="head" style="margin-bottom:16px">
+          <div><p class="eyebrow" id="t-kind"></p><h2 class="mono" id="t-label"></h2><p class="muted" id="t-prod"></p></div>
+          <span id="t-pill"></span>
+        </div>
+        <div class="tbl-wrap"><div class="stages" id="stages"></div><div class="bar"><i id="bar"></i></div></div>
+      </div>
+      <div class="grid g-2">
+        <div class="panel"><h2>Event history</h2><div class="events" id="events"></div></div>
+        <div class="grid" style="align-content:start">
+          <div class="panel"><h2>Unit details</h2><dl class="kv" id="details"></dl></div>
+          <div class="panel"><h2>Batch recall</h2><p class="muted" style="margin-bottom:10px" id="recall-lead"></p><div class="tbl-wrap"><table><thead><tr><th>Asset</th><th>Job</th><th class="r">Metres</th></tr></thead><tbody id="recall"></tbody></table></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ASSET -->
+    <section class="view" id="v-asset" hidden>
+      <div class="head">
+        <div><p class="eyebrow">Pipe passport · Sample District Council</p><h1 class="mono">SW-1042 · MH-0231 → MH-0232</h1><p class="muted">Wastewater gravity main · DN150 · AC host pipe · 62.4 m · 2.1 m deep</p></div>
+        <div class="actions"><button class="btn btn-dark" type="button">QA pack PDF</button></div>
+      </div>
+      <div class="panel">
+        <svg class="pipe" viewBox="0 0 800 130" role="img" aria-label="Pipe segment diagram, 62.4 metres, liner installed full length, two laterals reinstated at 18.2 and 41.7 metres">
+          <rect x="40" y="20" width="44" height="90" rx="6" fill="var(--surface-2)" stroke="var(--line)"/>
+          <rect x="716" y="20" width="44" height="90" rx="6" fill="var(--surface-2)" stroke="var(--line)"/>
+          <text x="62" y="126" text-anchor="middle" font-size="12" fill="var(--muted)">MH-0231</text>
+          <text x="738" y="126" text-anchor="middle" font-size="12" fill="var(--muted)">MH-0232</text>
+          <rect x="84" y="56" width="632" height="22" rx="11" fill="var(--surface-2)" stroke="var(--line)"/>
+          <rect x="88" y="60" width="624" height="14" rx="7" fill="var(--brand)"/>
+          <line x1="268" y1="56" x2="268" y2="24" stroke="var(--muted)" stroke-width="6" stroke-linecap="round"/>
+          <line x1="500" y1="56" x2="500" y2="24" stroke="var(--muted)" stroke-width="6" stroke-linecap="round"/>
+          <text x="268" y="16" text-anchor="middle" font-size="12" fill="var(--fg)">Lateral 18.2 m</text>
+          <text x="500" y="16" text-anchor="middle" font-size="12" fill="var(--fg)">Lateral 41.7 m</text>
+          <text x="400" y="100" text-anchor="middle" font-size="12" fill="var(--muted)">0 m — ASOE FFPP uPVC liner, reel PT-R-26-00417 — 62.4 m</text>
+        </svg>
+      </div>
+      <div class="grid g-3">
+        <div class="panel"><h2>Condition</h2><dl class="kv"><dt>Before</dt><dd><span class="pill bad">Grade 4</span> cracks, infiltration</dd><dt>After</dt><dd><span class="pill ok">Grade 1</span> no defects</dd><dt>Pre-CCTV</dt><dd class="mono">INS-26-0881</dd><dt>Post-CCTV</dt><dd class="mono">INS-26-0907</dd></dl></div>
+        <div class="panel"><h2>Materials</h2><dl class="kv"><dt>Liner</dt><dd>ASOE FFPP DN150</dd><dt>Unit</dt><dd class="mono"><a href="#trace">PT-R-26-00417</a></dd><dt>Batch</dt><dd class="mono">AS-2608-117</dd><dt>Marks</dt><dd class="num">0.0 → 62.4 m on reel</dd><dt>Certificate</dt><dd>Linked</dd></dl></div>
+        <div class="panel"><h2>Install</h2><dl class="kv"><dt>Date</dt><dd>27 Oct 2026</dd><dt>Crew</dt><dd>Crew A</dd><dt>Process log</dt><dd>Complete, per manufacturer checklist</dd><dt>Laterals</dt><dd>2 reinstated (robotic cutter)</dd><dt>Sample</dt><dd class="mono">SMP-26-044</dd></dl></div>
+      </div>
+      <div class="panel">
+        <h2>Hold points</h2>
+        <div class="tbl-wrap"><table><thead><tr><th>Hold point</th><th>Cleared by</th><th>When</th><th>Status</th></tr></thead><tbody>
+          <tr><td>Permit &amp; TMP</td><td>Crew leader A</td><td class="num">26 Oct 07:12</td><td><span class="pill ok">Cleared</span></td></tr>
+          <tr><td>Pre-start / JSA</td><td>Crew A (4 signed)</td><td class="num">27 Oct 06:58</td><td><span class="pill ok">Cleared</span></td></tr>
+          <tr><td>Pre-install CCTV</td><td>Crew C</td><td class="num">24 Oct 13:40</td><td><span class="pill ok">Cleared</span></td></tr>
+          <tr><td>Product scanned</td><td>Crew leader A</td><td class="num">27 Oct 08:05</td><td><span class="pill ok">Cleared</span></td></tr>
+          <tr><td>Post-install CCTV</td><td>Crew A</td><td class="num">27 Oct 15:20</td><td><span class="pill ok">Cleared</span></td></tr>
+          <tr><td>QA review</td><td>—</td><td>—</td><td><span class="pill warn">Waiting</span></td></tr>
+          <tr><td>Client sign-off</td><td>—</td><td>—</td><td><span class="pill neutral">Not started</span></td></tr>
+        </tbody></table></div>
+      </div>
+    </section>
+
+    <!-- FIELD -->
+    <section class="view" id="v-field" hidden>
+      <div class="head"><div><p class="eyebrow">Field app</p><h1>Crew leader, on site</h1><p class="muted">Works offline. Steps unlock in order, like hold points on site.</p></div></div>
+      <div class="phone-wrap">
+        <div class="phone">
+          <div class="screen">
+            <div class="top"><span>J26-0142 · Crew A</span><span class="offline">● Offline · 3 to sync</span></div>
+            <div class="job"><p style="color:#A8A39D;font-size:13px">Today, run 2 of 2</p><h3 class="mono">MH-0233 → MH-0234</h3><p style="color:#A8A39D;font-size:13px">DN150 · 48.9 m · 1 lateral</p></div>
+            <div class="steps" id="steps"></div>
+            <div class="cta"><button class="btn btn-primary" type="button" id="next">Start</button></div>
+          </div>
+        </div>
+        <div class="note">
+          <h2>What's going on here</h2>
+          <p>Tap the green button to walk the crew through the run. Each step captures its record once, and that record flows to QA, the client portal, stock and the invoice.</p>
+          <p>"Scan liner" uses the phone camera on the reel's QR label. The system checks the reel is allocated to this job, in date and the right DN before the crew can start.</p>
+          <p class="muted">Design rules: 3 taps or fewer per step, 48px+ targets for gloves, readable in sunlight, voice notes allowed, nothing lost without signal.</p>
+          <button class="btn btn-secondary" type="button" id="reset">Reset demo</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- PORTAL -->
+    <section class="view" id="v-portal" hidden>
+      <div class="head">
+        <div><p class="eyebrow">Council portal · what the client sees</p><h1>Wastewater Renewals, Package 3</h1><p class="muted">Sample District Council · Contract SDC-26-117</p></div>
+        <div class="actions"><button class="btn btn-secondary" type="button">Download all QA packs</button></div>
+      </div>
+      <div class="grid g-kpi">
+        <div class="panel prog"><span class="eyebrow">Progress</span><span class="kpi"><span class="v num">186 / 420 m</span></span><div class="meter"><i style="width:44%;background:var(--brand)"></i></div><span class="muted" style="font-size:13px">44% · on programme</span></div>
+        <div class="panel prog"><span class="eyebrow">Assets complete</span><span class="kpi"><span class="v num">3 of 8</span></span><span class="muted" style="font-size:13px">2 in QA review</span></div>
+        <div class="panel prog"><span class="eyebrow">Materials traced</span><span class="kpi"><span class="v num">100%</span></span><span class="muted" style="font-size:13px">Every metre linked to batch + certificate</span></div>
+        <div class="panel prog"><span class="eyebrow">Safety</span><span class="kpi"><span class="v num">0</span></span><span class="muted" style="font-size:13px">Lost-time injuries on this contract</span></div>
+      </div>
+      <div class="panel">
+        <h2>Assets</h2>
+        <div class="tbl-wrap"><table><thead><tr><th>Asset</th><th>Segment</th><th class="r">DN</th><th class="r">Length</th><th>Before</th><th>After</th><th>Status</th></tr></thead><tbody>
+          <tr><td class="mono"><a href="#asset">SW-1042</a></td><td>MH-0231 → MH-0232</td><td class="r num">150</td><td class="r num">62.4 m</td><td><span class="pill bad">4</span></td><td><span class="pill ok">1</span></td><td><span class="pill warn">QA review</span></td></tr>
+          <tr><td class="mono">SW-1043</td><td>MH-0232 → MH-0233</td><td class="r num">150</td><td class="r num">54.8 m</td><td><span class="pill bad">4</span></td><td><span class="pill ok">1</span></td><td><span class="pill ok">Complete</span></td></tr>
+          <tr><td class="mono">SW-1044</td><td>MH-0233 → MH-0234</td><td class="r num">150</td><td class="r num">48.9 m</td><td><span class="pill warn">3</span></td><td>—</td><td><span class="pill info">Installing today</span></td></tr>
+          <tr><td class="mono">SW-1051</td><td>MH-0240 → MH-0241</td><td class="r num">225</td><td class="r num">71.2 m</td><td><span class="pill bad">5</span></td><td>—</td><td><span class="pill neutral">Scheduled 4 Nov</span></td></tr>
+          <tr><td class="mono">SW-1052</td><td>MH-0241 → MH-0242</td><td class="r num">225</td><td class="r num">66.0 m</td><td><span class="pill warn">3</span></td><td>—</td><td><span class="pill neutral">Scheduled 5 Nov</span></td></tr>
+        </tbody></table></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+(function(){
+  // ── Router
+  var views=["today","jobs","trace","asset","field","portal"];
+  function show(){
+    var h=(location.hash||"#today").slice(1); if(views.indexOf(h)<0) h="today";
+    views.forEach(function(v){document.getElementById("v-"+v).hidden=(v!==h)});
+    document.querySelectorAll(".nav a").forEach(function(a){
+      if(a.getAttribute("href")==="#"+h) a.setAttribute("aria-current","page"); else a.removeAttribute("aria-current");
+    });
+    window.scrollTo(0,0);
+  }
+  window.addEventListener("hashchange",show); show();
+
+  // ── Jobs board (status derived from hold points)
+  var HP=["Permit","Pre-start","Pre-CCTV","Product","Post-CCTV","QA","Sign-off"];
+  var jobs=[
+    {n:"J26-0142",t:"Sample DC Pkg 3, run SW-1045",m:"ff",method:"Fold & form DN150",crew:"Crew A",when:"Thu 29",hp:[1,0,-1,1,0,0,0],block:"Pre-install CCTV missing"},
+    {n:"J26-0147",t:"Sample DC trunk main renewals",m:"ff",method:"Fold & form DN225",crew:"Crew A",when:"4 Nov",hp:[1,0,0,-1,0,0,0],block:"DN225 liner not yet allocated (container ETA 18 Nov)"},
+    {n:"J26-0139",t:"Example Water lateral junctions",m:"patch",method:"UV TopHat × 7",crew:"Crew B",when:"Today",hp:[1,1,1,1,0,0,0]},
+    {n:"J26-0144",t:"Industrial estate stormwater",m:"patch",method:"CIPP patches × 9",crew:"Crew B",when:"Wed 28",hp:[1,1,1,1,0,0,0]},
+    {n:"J26-0145",t:"CBD condition survey",m:"cctv",method:"Jet + CCTV 1.2 km",crew:"Crew C",when:"Mon 26",hp:[1,1,0,0,0,0,0],skip:true},
+    {n:"J26-0142a",t:"Sample DC Pkg 3, run SW-1042",m:"ff",method:"Fold & form DN150",crew:"Crew A",when:"27 Oct",hp:[1,1,1,1,1,0,0]},
+    {n:"J26-0142b",t:"Sample DC Pkg 3, run SW-1043",m:"ff",method:"Fold & form DN150",crew:"Crew A",when:"26 Oct",hp:[1,1,1,1,1,1,0]},
+    {n:"J26-0131",t:"Rural township sewer",m:"ff",method:"Fold & form DN150",crew:"Crew A",when:"14 Oct",hp:[1,1,1,1,1,1,1]},
+    {n:"J26-0150",t:"School grounds drainage",m:"patch",method:"CIPP patches × 3",crew:"Unassigned",when:"Nov",hp:[0,0,0,0,0,0,0]}
+  ];
+  function colOf(j){
+    if(j.hp.indexOf(-1)>=0) return "Blocked";
+    if(j.hp.every(function(x){return x===1})) return "Complete";
+    if(j.hp[4]===1) return "QA & sign-off";
+    if(j.hp[0]&&j.hp[1]&&j.hp[2]&&j.hp[3]) return "Ready / in progress";
+    if(j.skip && j.hp[0]&&j.hp[1]) return "Ready / in progress";
+    return "Planning";
+  }
+  var cols=["Planning","Blocked","Ready / in progress","QA & sign-off","Complete"];
+  var pillFor={"Planning":"neutral","Blocked":"bad","Ready / in progress":"info","QA & sign-off":"warn","Complete":"ok"};
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+  function renderJobs(f){
+    var k=document.getElementById("kanban"); k.innerHTML="";
+    cols.forEach(function(c){
+      var list=jobs.filter(function(j){return colOf(j)===c && (f==="all"||j.m===f)});
+      var d=document.createElement("div"); d.className="col";
+      d.innerHTML='<h3><span>'+c+'</span><span class="pill '+pillFor[c]+'">'+list.length+'</span></h3>'+list.map(function(j){
+        return '<div class="card"><div class="meta"><span class="mono">'+esc(j.n)+'</span><span>'+esc(j.when)+'</span></div><b>'+esc(j.t)+'</b><span class="muted" style="font-size:13px">'+esc(j.method)+' · '+esc(j.crew)+'</span><div class="hp" title="Hold points: '+HP.join(", ")+'">'+j.hp.map(function(x,i){return '<span class="'+(x===1?"c":x===-1?"x":"")+'" title="'+HP[i]+'"></span>'}).join("")+'</div>'+(j.block?'<span class="blocker">⚠ '+esc(j.block)+'</span>':'')+'</div>';
+      }).join("");
+      k.appendChild(d);
+    });
+  }
+  document.querySelectorAll("[data-f]").forEach(function(b){
+    b.addEventListener("click",function(){
+      document.querySelectorAll("[data-f]").forEach(function(x){x.setAttribute("aria-pressed",String(x===b))});
+      renderJobs(b.dataset.f);
+    });
+  });
+  renderJobs("all");
+
+  // ── Product tracking
+  var STAGES=["Forecast","Ordered","In production","Shipped","Clearing","Received","In stock","Allocated","Dispatched","On site","Installed","Verified","Handed over","Remainder"];
+  var units={
+    "PT-R-26-00417":{kind:"Liner reel",prod:"ASOE FFPP uPVC liner · DN150 · 150 m reel",stage:10,status:["info","Part installed · 87.6 m left"],lot:"AS-2608-117",
+      details:[["Batch / lot","AS-2608-117"],["Certificate","Linked (sample)"],["PO","PO-26-0388"],["Container","SAMPLE-CONT-01"],["Landed cost","$— /m (calculated on receipt)"],["Location","Truck PT-07 → Site J26-0142"],["On hand","87.6 m of 150.0 m"]],
+      events:[["2 Aug","Forecast","DN150 demand for Sample DC Pkg 3 added to forecast"],["9 Aug","Ordered","PO-26-0388 raised and synced to Xero"],["26 Aug","In production","Supplier confirmed lot AS-2608-117, test certificate attached"],["4 Sep","Shipped","Loaded on vessel, ETA Port Taranaki 2 Oct"],["3 Oct","Clearing","Customs and biosecurity cleared, landed cost apportioned"],["7 Oct","Received","Inspected at yard, label PT-R-26-00417 printed, 150.0 m"],["7 Oct","In stock","Yard bay A3"],["20 Oct","Allocated","Reserved for J26-0142: SW-1042, SW-1044"],["27 Oct","Dispatched","Scanned onto truck PT-07 by stores"],["27 Oct","On site","Scanned by Crew A at MH-0231"],["27 Oct","Installed","62.4 m into SW-1042 (marks 0.0–62.4 m)"]]},
+    "PT-R-26-00433":{kind:"Liner reel",prod:"ASOE FFPP uPVC liner · DN225 · 120 m reel",stage:3,status:["warn","Inbound · ETA slipped 3 days"],lot:"AS-2610-042",
+      details:[["Batch / lot","AS-2610-042"],["Certificate","Received from supplier"],["PO","PO-26-0412"],["Container","SAMPLE-CONT-02"],["ETA","18 Nov (was 15 Nov)"],["Location","At sea"],["Allocated to","J26-0147 (needs 340 m by 30 Nov)"]],
+      events:[["20 Sep","Forecast","DN225 shortfall flagged against J26-0147"],["22 Sep","Ordered","PO-26-0412 raised"],["10 Oct","In production","Lot AS-2610-042 confirmed"],["21 Oct","Shipped","Vessel departed, ETA 15 Nov"],["27 Oct","Shipped","Forwarder update: ETA now 18 Nov. Scheduler alerted"]]},
+    "PT-K-26-01102":{kind:"Resin kit",prod:"Patch resin kit · Part A + Part B",stage:7,status:["warn","Expires in 41 days"],lot:"BL-2607-19",
+      details:[["Batch / lot","BL-2607-19"],["SDS","Part A and Part B linked"],["Expiry","8 Dec 2026"],["Storage","Container 2, temperature-logged"],["Allocated to","J26-0144"],["Pick rule","First-expiry-first-out"]],
+      events:[["12 Aug","Ordered","PO-26-0371"],["1 Sep","Received","Label PT-K-26-01102 printed, expiry captured"],["1 Sep","In stock","Container 2"],["25 Oct","Allocated","Reserved for J26-0144 (oldest stock picked first)"]]}
+  };
+  var recall={
+    "AS-2608-117":[["SW-1042","J26-0142","62.4"],["SW-1043","J26-0142","54.8"],["SW-0977","J26-0131","71.0"],["SW-0978","J26-0131","38.5"]],
+    "AS-2610-042":[],
+    "BL-2607-19":[["Patch P-11","J26-0129","—"],["Patch P-12","J26-0129","—"]]
+  };
+  function renderUnit(id){
+    var u=units[id]; if(!u) return;
+    document.getElementById("t-kind").textContent=u.kind;
+    document.getElementById("t-label").textContent=id;
+    document.getElementById("t-prod").textContent=u.prod;
+    document.getElementById("t-pill").innerHTML='<span class="pill '+u.status[0]+'">'+esc(u.status[1])+'</span>';
+    document.getElementById("stages").innerHTML=STAGES.map(function(s,i){
+      return '<div class="stage '+(i<u.stage?"done":i===u.stage?"now":"")+'"><span class="dot"></span>'+s+'</div>';
+    }).join("");
+    document.getElementById("bar").style.width=(u.stage/(STAGES.length-1)*100)+"%";
+    document.getElementById("events").innerHTML=u.events.slice().reverse().map(function(e){
+      return '<div class="ev"><time>'+e[0]+'</time><div><b>'+e[1]+'</b><p class="muted">'+esc(e[2])+'</p></div></div>';
+    }).join("");
+    document.getElementById("details").innerHTML=u.details.map(function(d){return '<dt>'+d[0]+'</dt><dd>'+esc(d[1])+'</dd>'}).join("");
+    var r=recall[u.lot]||[];
+    document.getElementById("recall-lead").innerHTML='Everything installed from lot <span class="mono">'+u.lot+'</span>, any unit:';
+    document.getElementById("recall").innerHTML=r.length?r.map(function(x){return '<tr><td class="mono">'+x[0]+'</td><td class="mono">'+x[1]+'</td><td class="r num">'+x[2]+'</td></tr>'}).join(""):'<tr><td colspan="3" class="muted">Nothing installed from this lot yet.</td></tr>';
+    document.querySelectorAll("[data-u]").forEach(function(b){b.setAttribute("aria-pressed",String(b.dataset.u===id))});
+  }
+  document.querySelectorAll("[data-u]").forEach(function(b){
+    b.addEventListener("click",function(){document.getElementById("q").value=b.dataset.u;renderUnit(b.dataset.u)});
+  });
+  document.getElementById("q").addEventListener("input",function(e){
+    var v=e.target.value.trim().toUpperCase();
+    if(units[v]) renderUnit(v);
+    else { for(var k in units){ if(units[k].lot===v){ e.target.value=k; renderUnit(k); break; } } }
+  });
+  renderUnit("PT-R-26-00417");
+
+  // ── Field app walkthrough
+  var steps=[
+    ["Pre-start & JSA","4 crew signed · hazards: traffic, confined space"],
+    ["Permit & TMP check","Confined space permit CS-26-212 open"],
+    ["Pre-install CCTV","INS-26-0896 linked"],
+    ["Scan liner","PT-R-26-00417 · DN150 ✓ · allocated ✓ · 87.6 m on reel"],
+    ["Install log","Process readings per manufacturer checklist"],
+    ["Reinstate lateral","1 of 1 · robotic cutter"],
+    ["Post-install CCTV","Upload or link from CCTV unit"],
+    ["Client sign-off","Council rep signs on screen"]
+  ];
+  var cur=0;
+  var labels=["Start","Mark pre-start done","Confirm permit","Link pre-CCTV","Scan QR label","Save install log","Save lateral","Link post-CCTV","Get signature","Run complete ✓"];
+  function renderSteps(){
+    document.getElementById("steps").innerHTML=steps.map(function(s,i){
+      var c=i<cur?"done":i===cur?"cur":"lock";
+      return '<div class="step '+c+'"><span class="ic">'+(i<cur?"✓":(i+1))+'</span><div><b>'+s[0]+'</b>'+(i<cur?'<small>'+esc(s[1])+'</small>':i===cur?'<small>Next up</small>':'<small>Locked until previous step</small>')+'</div></div>';
+    }).join("");
+    document.getElementById("next").textContent=labels[Math.min(cur+1,labels.length-1)];
+  }
+  document.getElementById("next").addEventListener("click",function(){ if(cur<steps.length) cur++; renderSteps(); });
+  document.getElementById("reset").addEventListener("click",function(){ cur=0; renderSteps(); });
+  renderSteps();
+})();
+</script>
