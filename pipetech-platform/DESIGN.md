@@ -147,6 +147,26 @@
 | **ASOE Dealer Portal** | Dealers order, track shipments, download certs, register installs → warranty | Phone + email |
 | **Insights** | KPI dashboards (section 9) | Excel |
 
+### 5.2 Additions from the Procore / Simpro analysis (v0.2)
+
+See [`COMPETITOR-ANALYSIS.md`](./COMPETITOR-ANALYSIS.md) for the full comparison. Added to scope:
+
+| Feature | Module | Phase |
+|---|---|---|
+| Native pre-start/JSA, permits, plant pre-use (offline, prefilled) | HSE / Field App | 1 |
+| Competency matrix with hard scheduling block | People / Scheduling | 1 |
+| Incidents & observations with WorkSafe notifiable-event flag | HSE | 1 |
+| Auto-built daily site diary + voice notes | Field App | 1 |
+| Progress claims from verified metres, retentions, Construction Contracts Act compliant | Claims & Finance | 2 |
+| Early-warning variations from the field → client approval | Jobs / Client Portal | 2 |
+| Council submittals register and Technical Queries (TQs) | Documents | 2 |
+| Plant maintenance (KRE cutter, heat units, CCTV, jetters) | Plant & Fleet | 2 |
+| Defects list per asset | QA | 2 |
+| Subcontractor register + portal | Suppliers | 3 |
+| AI photo validation, AI scheduling, "Ask PipeTech" assistant | Insights / AI | 3–4 |
+
+**Performance budget** (non-negotiable, learned from competitor reviews): app opens in under 2 s on a mid-range Android; every field flow works 100% offline; photos upload in a background queue; a new technician completes a pre-start unaided within 5 minutes.
+
 ---
 
 ## 6. Supply-to-install tracking system (the centrepiece)
