@@ -172,6 +172,58 @@ td.r,th.r{text-align:right}
 /* Portal */
 .prog{display:flex;flex-direction:column;gap:8px}
 
+/* Forms */
+.form{display:flex;flex-direction:column;gap:14px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field > label,.field > .lbl{font-size:13px;font-weight:650}
+select,textarea,input[type="number"]{font:inherit;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;min-height:44px;width:100%}
+textarea{min-height:88px;resize:vertical}
+select:focus-visible,textarea:focus-visible,input[type="number"]:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:520px){.row2{grid-template-columns:1fr}}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:14px;padding:6px 0}
+.check input{width:20px;height:20px;margin-top:1px;accent-color:var(--accent-text);flex:none}
+.alert{border-radius:8px;padding:12px 14px;font-size:14px;display:flex;flex-direction:column;gap:4px}
+.alert.bad{border:1px solid var(--bad)}
+.alert b{font-size:14px}
+.total{display:flex;justify-content:space-between;align-items:baseline;border-top:2px solid var(--fg);padding-top:10px;font-weight:700;font-size:18px}
+
+/* Competency matrix */
+.cm td,.cm th{text-align:center}
+.cm td:first-child,.cm th:first-child{text-align:left}
+.cell{display:inline-block;min-width:64px;font-size:12px;font-weight:650;border-radius:6px;padding:4px 8px}
+
+/* Variation workflow */
+.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.flow div{font-size:12px;font-weight:650;text-align:center;padding:8px 4px;border-radius:6px;background:var(--surface-2);color:var(--muted)}
+.flow div.done{background:var(--brand);color:var(--on-brand)}
+.flow div.now{background:var(--ink);color:var(--on-ink)}
+tr.sel td{background:var(--surface-2)}
+tbody tr[data-vo]{cursor:pointer}
+
+/* Scope planner */
+.scope-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+.scope-item:first-child{border-top:0}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{font:inherit;font-size:13px;font-weight:650;background:var(--surface);color:var(--muted);border:0;border-left:1px solid var(--line);padding:8px 12px;min-height:40px;cursor:pointer}
+.seg button:first-child{border-left:0}
+.seg button[aria-pressed="true"].m{background:var(--brand);color:var(--on-brand)}
+.seg button[aria-pressed="true"].s{background:var(--info-bg);color:var(--info)}
+.seg button[aria-pressed="true"].l{background:var(--surface-2);color:var(--fg)}
+.why{font-size:13px;color:var(--muted)}
+.tag{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-radius:4px;padding:2px 6px;margin-left:6px;vertical-align:2px}
+.tag.law{background:var(--bad-bg);color:var(--bad)}
+.tag.size{background:var(--surface-2);color:var(--muted)}
+@media (max-width:640px){.scope-item{grid-template-columns:1fr}}
+
+/* Phone quick actions */
+.quick{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 14px 12px}
+.quick a{display:flex;align-items:center;justify-content:center;min-height:48px;border-radius:12px;border:1px solid #3A3632;background:#211F1D;color:#F2F1EF;text-decoration:none;font-size:14px;font-weight:650}
+
+/* Toast */
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--on-ink);padding:12px 18px;border-radius:10px;font-size:14px;font-weight:600;z-index:20;box-shadow:0 8px 24px rgba(0,0,0,.3);max-width:calc(100% - 32px)}
+
 @media (max-width:820px){
   .app{grid-template-columns:minmax(0,1fr)}
   .side{position:sticky;top:env(safe-area-inset-top,0px);height:auto;flex-direction:row;align-items:center;gap:8px;padding:8px max(16px,env(safe-area-inset-right,0px)) 8px max(16px,env(safe-area-inset-left,0px));z-index:5;overflow-x:auto}
@@ -190,7 +242,7 @@ td.r,th.r{text-align:right}
   <aside class="side">
     <div class="logo">
       <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="7" fill="#65FF00"/><circle cx="15" cy="15" r="8" fill="none" stroke="#272422" stroke-width="3"/><circle cx="15" cy="15" r="3" fill="#272422"/></svg>
-      <span>PipeTech OS<small>Prototype v0.1</small></span>
+      <span>PipeTech OS<small>Prototype v0.3</small></span>
     </div>
     <nav class="nav" aria-label="Main">
       <a href="#today"><svg viewBox="0 0 24 24"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>Today</a>
@@ -198,7 +250,10 @@ td.r,th.r{text-align:right}
       <a href="#trace"><svg viewBox="0 0 24 24"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4z"/><path d="M14 14h2v2h-2zM18 18h2v2h-2zM14 18h2M18 14h2"/></svg>Product tracking</a>
       <a href="#asset"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><path d="M7 12h10"/></svg>Pipe passport</a>
       <a href="#field"><svg viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>Field app</a>
+      <a href="#safety"><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>Safety (HSE)</a>
+      <a href="#variations"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M10 13h6M13 10v6"/></svg>Variations</a>
       <a href="#portal"><svg viewBox="0 0 24 24"><path d="M3 21h18M5 21V9l7-5 7 5v12"/><path d="M10 21v-6h4v6"/></svg>Council portal</a>
+      <a href="#scope"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg>Release 1 plan</a>
     </nav>
     <div class="foot">Sample data only. No real clients, staff or jobs.</div>
   </aside>
@@ -228,6 +283,8 @@ td.r,th.r{text-align:right}
             <div><span class="pill warn">People</span><div class="grow"><b>2 confined-space tickets expire within 30 days.</b><p class="muted">Book refresher before 20 Nov.</p></div></div>
             <div><span class="pill info">QA</span><div class="grow"><b>3 QA packs ready for review.</b> Auto-built from field records.<p class="muted">Average 2 days from install to pack this month.</p></div></div>
             <div><span class="pill ok">Cash</span><div class="grow"><b>Progress claim #4 drafted in Xero</b> for 186 m completed on Sample DC Pkg 3.<p class="muted">Approve to send.</p></div></div>
+            <div><span class="pill warn">Variation</span><div class="grow"><b>VO-26-014 ($9,870) waiting on client 5 days.</b> Host pipe collapse at 32 m on SW-1044.<p class="muted"><a href="#variations">Chase or view evidence</a></p></div></div>
+            <div><span class="pill info">Safety</span><div class="grow"><b>1 corrective action overdue:</b> replace damaged gas detector sensor.<p class="muted"><a href="#safety">Open safety</a></p></div></div>
           </div>
         </div>
         <div class="panel">
@@ -348,6 +405,7 @@ td.r,th.r{text-align:right}
             <div class="top"><span>J26-0142 · Crew A</span><span class="offline">● Offline · 3 to sync</span></div>
             <div class="job"><p style="color:#A8A39D;font-size:13px">Today, run 2 of 2</p><h3 class="mono">MH-0233 → MH-0234</h3><p style="color:#A8A39D;font-size:13px">DN150 · 48.9 m · 1 lateral</p></div>
             <div class="steps" id="steps"></div>
+            <div class="quick"><a href="#safety">⚠ Report hazard</a><a href="#variations">＋ Raise variation</a></div>
             <div class="cta"><button class="btn btn-primary" type="button" id="next">Start</button></div>
           </div>
         </div>
@@ -359,6 +417,138 @@ td.r,th.r{text-align:right}
           <button class="btn btn-secondary" type="button" id="reset">Reset demo</button>
         </div>
       </div>
+    </section>
+
+    <!-- SAFETY -->
+    <section class="view" id="v-safety" hidden>
+      <div class="head">
+        <div><p class="eyebrow">Health, safety &amp; environment</p><h1>Safety</h1><p class="muted">Built in, not bolted on. Same jobs, crews and assets as everything else.</p></div>
+        <div class="actions"><a class="btn btn-primary" href="#report" style="text-decoration:none">Report something</a></div>
+      </div>
+      <div class="grid g-kpi">
+        <div class="panel kpi"><span class="eyebrow">Pre-starts done, 7 days</span><span class="v num">98%</span><span class="d muted">49 of 50 shifts</span></div>
+        <div class="panel kpi"><span class="eyebrow">Reports this month</span><span class="v num" id="obs-count">23</span><span class="d muted">14 good catches · 7 hazards · 2 near misses</span></div>
+        <div class="panel kpi"><span class="eyebrow">Corrective actions</span><span class="v num">4 open</span><span class="d"><span class="pill bad">1 overdue</span></span></div>
+        <div class="panel kpi"><span class="eyebrow">Tickets expiring, 60 days</span><span class="v num">3</span><span class="d"><span class="pill warn">1 blocks scheduling 12 Nov</span></span></div>
+        <div class="panel kpi"><span class="eyebrow">Days since lost-time injury</span><span class="v num">212</span><span class="d muted">Lag indicator. Watch the leading ones above</span></div>
+      </div>
+      <div class="grid g-2">
+        <form class="panel form" id="report" novalidate>
+          <h2>Report something</h2>
+          <div class="field"><span class="lbl" id="rtype-l">What kind of report?</span>
+            <div class="chips" role="group" aria-labelledby="rtype-l">
+              <button class="chip" type="button" data-rt="Good catch" aria-pressed="true">👍 Good catch</button>
+              <button class="chip" type="button" data-rt="Hazard" aria-pressed="false">Hazard</button>
+              <button class="chip" type="button" data-rt="Near miss" aria-pressed="false">Near miss</button>
+              <button class="chip" type="button" data-rt="Incident" aria-pressed="false">Incident</button>
+            </div>
+          </div>
+          <div class="row2">
+            <div class="field"><label for="r-job">Job</label><select id="r-job"><option>J26-0142 · Fold &amp; form</option><option>J26-0139 · UV TopHats</option><option>J26-0145 · CCTV &amp; jetting</option><option>Yard / workshop</option></select></div>
+            <div class="field"><label for="r-where">Where</label><input type="text" id="r-where" value="MH-0233, Example Street"></div>
+          </div>
+          <div class="field"><label for="r-what">What happened?</label><textarea id="r-what">Public walked between the cones and the open manhole while the gas detector was being checked.</textarea></div>
+          <div class="field"><label for="r-photo">Photo (optional)</label><input type="file" id="r-photo" accept="image/*"></div>
+          <div id="notifiable" hidden>
+            <div class="field"><span class="lbl">Did it involve any of these?</span>
+              <label class="check"><input type="checkbox" class="nf" id="nf1"> Death</label>
+              <label class="check"><input type="checkbox" class="nf" id="nf2"> Serious injury or illness (e.g. hospital admission, amputation, serious burn, loss of consciousness)</label>
+              <label class="check"><input type="checkbox" class="nf" id="nf3"> Dangerous incident (e.g. confined space atmosphere, gas release, collapse, uncontrolled escape of a substance)</label>
+            </div>
+            <div class="alert bad" id="nf-alert" hidden><b>This may be a notifiable event (HSWA 2015)</b><span>Make the area safe. Preserve the site. Call the HSE lead now so WorkSafe can be notified as soon as possible. The HSE lead and MD are being alerted.</span></div>
+          </div>
+          <button class="btn btn-primary" type="submit" style="justify-content:center">Send report</button>
+          <p class="muted" style="font-size:13px">Works offline. Takes about 30 seconds. Good catches count as much as hazards.</p>
+        </form>
+        <div class="panel"><h2>Recent reports</h2><div class="list" id="reports"></div></div>
+      </div>
+      <div class="panel">
+        <h2>Corrective actions</h2>
+        <div class="tbl-wrap"><table><thead><tr><th>Action</th><th>From</th><th>Owner</th><th>Due</th><th>Status</th></tr></thead><tbody>
+          <tr><td>Replace damaged gas detector sensor (unit GD-03)</td><td>Hazard H-26-088</td><td>Crew leader B</td><td class="num">25 Oct</td><td><span class="pill bad">Overdue</span></td></tr>
+          <tr><td>Add second barrier to MH set-up on footpaths</td><td>Near miss N-26-012</td><td>HSE lead</td><td class="num">5 Nov</td><td><span class="pill warn">In progress</span></td></tr>
+          <tr><td>Toolbox talk: resin handling and PPE</td><td>SDS review</td><td>Ops manager</td><td class="num">7 Nov</td><td><span class="pill info">Scheduled</span></td></tr>
+          <tr><td>Fix steam hose clamp on heat unit HU-02</td><td>Plant pre-use check</td><td>Workshop</td><td class="num">1 Nov</td><td><span class="pill warn">Parts ordered</span></td></tr>
+        </tbody></table></div>
+      </div>
+      <div class="grid g-2">
+        <div class="panel">
+          <h2>Tickets &amp; competencies</h2>
+          <p class="muted" style="margin-bottom:12px">The crew board won't let you schedule someone onto work they aren't ticketed for.</p>
+          <div class="tbl-wrap"><table class="cm"><thead><tr><th>Person</th><th>Confined space</th><th>Traffic mgmt</th><th>First aid</th><th>KRE cutter</th><th>Heat unit</th></tr></thead><tbody id="matrix"></tbody></table></div>
+          <p style="margin-top:12px;font-size:14px"><span class="pill bad">Blocks</span> Technician 4's confined space ticket expires 12 Nov. They drop off confined-space jobs from that date unless renewed.</p>
+        </div>
+        <div class="panel">
+          <h2>Hazardous substances</h2>
+          <div class="tbl-wrap"><table><thead><tr><th>Product</th><th>SDS</th><th>Used in</th></tr></thead><tbody>
+            <tr><td>Patch resin, Part A (sample)</td><td><span class="pill ok">Current</span></td><td>CIPP patches</td></tr>
+            <tr><td>Patch resin, Part B (sample)</td><td><span class="pill ok">Current</span></td><td>CIPP patches</td></tr>
+            <tr><td>Hydraulic oil (sample)</td><td><span class="pill warn">Review due</span></td><td>Robotic cutter</td></tr>
+          </tbody></table></div>
+          <p class="muted" style="margin-top:12px;font-size:13px">The right SDS and PPE show up inside the field step that uses the product.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- VARIATIONS -->
+    <section class="view" id="v-variations" hidden>
+      <div class="head">
+        <div><p class="eyebrow">Commercial</p><h1>Variations</h1><p class="muted">Raised on site in minutes, priced from your rate library, approved by the client in their portal.</p></div>
+      </div>
+      <div class="grid g-kpi">
+        <div class="panel kpi"><span class="eyebrow">Open</span><span class="v num" id="vo-open">3</span><span class="d muted" id="vo-open-v">$18,420 at stake</span></div>
+        <div class="panel kpi"><span class="eyebrow">Approved, October</span><span class="v num" id="vo-appr">$26,100</span><span class="d muted">6 variations</span></div>
+        <div class="panel kpi"><span class="eyebrow">Avg days to approval</span><span class="v num">4.2</span><span class="d muted">Target ≤ 5</span></div>
+        <div class="panel kpi"><span class="eyebrow">Unpriced</span><span class="v num">1</span><span class="d"><span class="pill warn">Price within 24 h</span></span></div>
+      </div>
+      <div class="panel">
+        <h2>Register</h2>
+        <div class="tbl-wrap"><table><thead><tr><th>VO</th><th>Job · asset</th><th>Cause</th><th class="r">Value</th><th class="r">Days open</th><th>Status</th></tr></thead><tbody id="vo-rows"></tbody></table></div>
+      </div>
+      <div class="grid g-2">
+        <div class="panel" id="vo-detail"></div>
+        <form class="panel form" id="vo-calc" novalidate>
+          <h2>Price a variation</h2>
+          <p class="muted" style="font-size:13px">Example rates only. Real rates come from your rate library.</p>
+          <div class="field"><label for="c-cause">Cause</label><select id="c-cause"><option>Host pipe collapse / deformation</option><option>Extra lateral found</option><option>Root mass / extra cleaning</option><option>Client-requested scope change</option><option>Access / traffic restriction</option></select></div>
+          <div class="row2">
+            <div class="field"><label for="c-dn">Extra lining DN</label><select id="c-dn"><option value="185">DN150 · $185/m</option><option value="240">DN225 · $240/m</option><option value="0">None</option></select></div>
+            <div class="field"><label for="c-m">Extra metres</label><input type="number" id="c-m" min="0" step="0.1" value="0"></div>
+          </div>
+          <div class="row2">
+            <div class="field"><label for="c-h">Extra crew hours</label><input type="number" id="c-h" min="0" step="0.5" value="6"></div>
+            <div class="field"><label for="c-lat">Extra laterals reinstated</label><input type="number" id="c-lat" min="0" step="1" value="0"></div>
+          </div>
+          <div class="field"><span class="lbl">Plant &amp; subcontract</span>
+            <label class="check"><input type="checkbox" id="c-vac" checked> Vac truck, half day ($950)</label>
+            <label class="check"><input type="checkbox" id="c-dig"> Point repair excavation, subcontract ($6,500)</label>
+            <label class="check"><input type="checkbox" id="c-tm" checked> Extra traffic management day ($1,200)</label>
+          </div>
+          <dl class="kv" id="c-break"></dl>
+          <div class="total"><span>Total excl. GST</span><span class="num" id="c-total"></span></div>
+          <button class="btn btn-primary" type="submit" style="justify-content:center">Create draft variation</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- SCOPE -->
+    <section class="view" id="v-scope" hidden>
+      <div class="head">
+        <div><p class="eyebrow">Your decision</p><h1>Release 1 plan</h1></div>
+        <div class="actions"><button class="btn btn-secondary" type="button" id="scope-reset">Back to my recommendation</button><button class="btn btn-primary" type="button" id="scope-copy">Copy my choices</button></div>
+      </div>
+      <div class="panel" style="display:flex;flex-direction:column;gap:10px">
+        <h2>What "must-have" means</h2>
+        <p>We can't build everything at once. Release 1 should be small enough to ship in about 3–4 months and good enough that crews choose to use it.</p>
+        <p><b>Must</b>: release 1 is pointless or unsafe without it. <b>Next</b>: wanted soon, but release 1 still works without it. <b>Later</b>: nice, not urgent.</p>
+        <p class="muted">I've pre-set my recommendations. Change anything you disagree with, then press <b>Copy my choices</b> and paste them back to me.</p>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-top:6px">
+          <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:650"><span>Release 1 size</span><span class="num" id="cap-txt"></span></div>
+          <div class="meter" style="height:14px"><i id="cap-bar" style="background:var(--brand)"></i></div>
+          <p class="muted" style="font-size:13px" id="cap-note"></p>
+        </div>
+      </div>
+      <div class="panel"><div id="scope-list"></div></div>
     </section>
 
     <!-- PORTAL -->
@@ -390,9 +580,11 @@ td.r,th.r{text-align:right}
 <script>
 (function(){
   // ── Router
-  var views=["today","jobs","trace","asset","field","portal"];
+  var views=["today","jobs","trace","asset","field","safety","variations","portal","scope"];
   function show(){
-    var h=(location.hash||"#today").slice(1); if(views.indexOf(h)<0) h="today";
+    var h=(location.hash||"#today").slice(1);
+    if(h==="report"){ location.hash="#safety"; setTimeout(function(){var f=document.getElementById("report"); f.scrollIntoView({behavior:"smooth"}); document.getElementById("r-what").focus();},50); return; }
+    if(views.indexOf(h)<0) h="today";
     views.forEach(function(v){document.getElementById("v-"+v).hidden=(v!==h)});
     document.querySelectorAll(".nav a").forEach(function(a){
       if(a.getAttribute("href")==="#"+h) a.setAttribute("aria-current","page"); else a.removeAttribute("aria-current");
@@ -514,5 +706,200 @@ td.r,th.r{text-align:right}
   document.getElementById("next").addEventListener("click",function(){ if(cur<steps.length) cur++; renderSteps(); });
   document.getElementById("reset").addEventListener("click",function(){ cur=0; renderSteps(); });
   renderSteps();
+
+  // ── Toast + demo-only buttons
+  var tt;
+  function toast(msg){
+    var t=document.querySelector(".toast"); if(!t){t=document.createElement("div");t.className="toast";t.setAttribute("role","status");document.body.appendChild(t);}
+    t.textContent=msg; t.hidden=false; clearTimeout(tt); tt=setTimeout(function(){t.hidden=true},3200);
+  }
+  document.querySelectorAll(".head .actions .btn:not([id]):not([href])").forEach(function(b){
+    b.addEventListener("click",function(){toast("Prototype: \""+b.textContent.trim()+"\" isn't wired up yet")});
+  });
+
+  // ── Safety: reports
+  var reports=[
+    ["Good catch","J26-0142","Crew spotted a frayed winch rope before the pull and swapped it.","Today 09:12"],
+    ["Hazard","J26-0145","Uneven footpath at MH-0310. Cones moved and photo logged.","Yesterday"],
+    ["Near miss","J26-0139","Van reversed toward a worker at the trailer. Spotter rule reinforced.","26 Oct"],
+    ["Good catch","Yard","Resin kits found stored near the heater. Moved and labelled.","24 Oct"]
+  ];
+  var rtPill={"Good catch":"ok","Hazard":"warn","Near miss":"warn","Incident":"bad"};
+  function renderReports(){
+    document.getElementById("reports").innerHTML=reports.map(function(r){
+      return '<div><span class="pill '+rtPill[r[0]]+'">'+r[0]+'</span><div class="grow"><b>'+esc(r[1])+'</b> '+esc(r[2])+'<p class="muted">'+esc(r[3])+'</p></div></div>';
+    }).join("");
+    document.getElementById("obs-count").textContent=String(19+reports.length);
+  }
+  renderReports();
+  var rtype="Good catch";
+  document.querySelectorAll("[data-rt]").forEach(function(b){
+    b.addEventListener("click",function(){
+      rtype=b.dataset.rt;
+      document.querySelectorAll("[data-rt]").forEach(function(x){x.setAttribute("aria-pressed",String(x===b))});
+      document.getElementById("notifiable").hidden=(rtype!=="Incident"&&rtype!=="Near miss");
+    });
+  });
+  document.querySelectorAll(".nf").forEach(function(c){
+    c.addEventListener("change",function(){
+      document.getElementById("nf-alert").hidden=!Array.prototype.some.call(document.querySelectorAll(".nf"),function(x){return x.checked});
+    });
+  });
+  document.getElementById("report").addEventListener("submit",function(e){
+    e.preventDefault();
+    var what=document.getElementById("r-what").value.trim();
+    if(!what){ toast("Add a line about what happened first"); document.getElementById("r-what").focus(); return; }
+    reports.unshift([rtype,document.getElementById("r-job").value.split(" · ")[0],what,"Just now"]);
+    renderReports();
+    var nf=!document.getElementById("nf-alert").hidden;
+    toast(nf?"Sent. HSE lead and MD alerted: possible notifiable event":"Report sent. Thanks for speaking up");
+  });
+
+  // ── Safety: competency matrix (example people only)
+  var M=[
+    ["Technician 1",["ok:Mar 27","ok:Aug 27","ok:Jan 27","ok:Trained","ok:Trained"]],
+    ["Technician 2",["ok:Jun 27","warn:Dec 26","ok:Jul 27","—","ok:Trained"]],
+    ["Technician 3",["ok:Feb 27","ok:May 27","bad:Expired","ok:Trained","—"]],
+    ["Technician 4",["warn:12 Nov","ok:Sep 27","ok:Apr 27","—","ok:Trained"]],
+    ["Technician 5",["ok:Oct 27","—","ok:Nov 27","in:Training","—"]]
+  ];
+  var cls={ok:"ok",warn:"warn",bad:"bad",in:"info"};
+  document.getElementById("matrix").innerHTML=M.map(function(p){
+    return '<tr><td>'+p[0]+'</td>'+p[1].map(function(c){
+      if(c==="—") return '<td class="muted">—</td>';
+      var k=c.split(":"); return '<td><span class="cell '+cls[k[0]]+'">'+k[1]+'</span></td>';
+    }).join("")+'</tr>';
+  }).join("");
+
+  // ── Variations
+  var VO=[
+    {id:"VO-26-014",job:"J26-0142",asset:"SW-1044",cause:"Host pipe collapse at 32.0 m",val:9870,days:5,st:2,
+     ev:["3 photos from Crew A (27 Oct 14:02)","CCTV INS-26-0896 at 31.6–32.4 m","Voice note from crew leader, transcribed"],
+     lines:[["Point repair excavation (subcontract)",6500],["Vac truck, half day",950],["Extra traffic management day",1200],["Crew standby, 6 h",1220]],time:"+1 day to SW-1044"},
+    {id:"VO-26-015",job:"J26-0139",asset:"Lateral L-22",cause:"Extra lateral junction found",val:2350,days:2,st:2,
+     ev:["Pre-CCTV shows unrecorded junction at 14.3 m","2 photos"],lines:[["UV TopHat, supply + install",2350]],time:"None"},
+    {id:"VO-26-016",job:"J26-0145",asset:"SW-0310",cause:"Heavy root mass, extra cutting",val:6200,days:1,st:0,
+     ev:["CCTV INS-26-0910 at 8–22 m","1 photo"],lines:[["To be priced",6200]],time:"TBC"},
+    {id:"VO-26-011",job:"J26-0131",asset:"SW-0978",cause:"Client added 12 m extension",val:2220,days:0,st:3,
+     ev:["Client instruction email"],lines:[["DN150 lining, 12 m @ $185",2220]],time:"None"}
+  ];
+  var FLOW=["Raised on site","Priced","Sent to client","Client decision"];
+  var stPill=[["warn","Needs pricing"],["info","Priced"],["warn","With client"],["ok","Approved"],["bad","Rejected"]];
+  var selVO="VO-26-014", nextVO=17;
+  function money(n){return "$"+Math.round(n).toLocaleString("en-NZ")}
+  function renderVO(){
+    document.getElementById("vo-rows").innerHTML=VO.map(function(v){
+      var p=stPill[v.st];
+      return '<tr data-vo="'+v.id+'" tabindex="0" class="'+(v.id===selVO?"sel":"")+'"><td class="mono">'+v.id+'</td><td><span class="mono">'+v.job+'</span> · '+esc(v.asset)+'</td><td>'+esc(v.cause)+'</td><td class="r num">'+money(v.val)+'</td><td class="r num">'+(v.st>=3?"—":v.days)+'</td><td><span class="pill '+p[0]+'">'+p[1]+'</span></td></tr>';
+    }).join("");
+    var open=VO.filter(function(v){return v.st<3});
+    document.getElementById("vo-open").textContent=String(open.length);
+    document.getElementById("vo-open-v").textContent=money(open.reduce(function(a,v){return a+v.val},0))+" at stake";
+    var v=VO.filter(function(x){return x.id===selVO})[0];
+    var step=Math.min(v.st,3);
+    var acts=v.st===0?'<button class="btn btn-primary" type="button" data-act="price">Mark as priced</button>':
+             v.st===1?'<button class="btn btn-primary" type="button" data-act="send">Send to client</button>':
+             v.st===2?'<button class="btn btn-primary" type="button" data-act="approve">Client approves</button><button class="btn btn-secondary" type="button" data-act="reject">Client rejects</button>':
+             '<span class="muted">'+(v.st===3?"Approved. Added to the next progress claim.":"Rejected. Reason logged; talk to the client.")+'</span>';
+    document.getElementById("vo-detail").innerHTML=
+      '<div style="display:flex;flex-direction:column;gap:14px"><div><p class="eyebrow">'+v.id+' · '+v.job+' · '+esc(v.asset)+'</p><h2>'+esc(v.cause)+'</h2></div>'+
+      '<div class="flow">'+FLOW.map(function(f,i){return '<div class="'+(i<step||(i===3&&v.st>=3)?"done":i===step?"now":"")+'">'+f+'</div>'}).join("")+'</div>'+
+      '<div><h3 style="margin-bottom:6px">Evidence</h3><ul style="margin:0;padding-left:18px">'+v.ev.map(function(e){return '<li>'+esc(e)+'</li>'}).join("")+'</ul></div>'+
+      '<div><h3 style="margin-bottom:6px">Cost</h3><dl class="kv">'+v.lines.map(function(l){return '<dt>'+esc(l[0])+'</dt><dd class="num" style="text-align:right">'+money(l[1])+'</dd>'}).join("")+'</dl><div class="total" style="margin-top:8px"><span>Total excl. GST</span><span class="num">'+money(v.val)+'</span></div></div>'+
+      '<p><b>Time impact:</b> '+esc(v.time)+'</p><div style="display:flex;gap:8px;flex-wrap:wrap">'+acts+'</div></div>';
+  }
+  document.getElementById("vo-rows").addEventListener("click",function(e){var r=e.target.closest("tr[data-vo]"); if(r){selVO=r.dataset.vo; renderVO();}});
+  document.getElementById("vo-rows").addEventListener("keydown",function(e){var r=e.target.closest("tr[data-vo]"); if(r&&(e.key==="Enter"||e.key===" ")){e.preventDefault(); selVO=r.dataset.vo; renderVO();}});
+  document.getElementById("vo-detail").addEventListener("click",function(e){
+    var b=e.target.closest("[data-act]"); if(!b) return;
+    var v=VO.filter(function(x){return x.id===selVO})[0];
+    var a=b.dataset.act;
+    if(a==="price"){v.st=1; toast(v.id+" priced");}
+    if(a==="send"){v.st=2; toast(v.id+" sent to client portal");}
+    if(a==="approve"){v.st=3; v.days=0; toast(v.id+" approved, added to next claim");}
+    if(a==="reject"){v.st=4; toast(v.id+" rejected");}
+    renderVO();
+  });
+  renderVO();
+
+  function calc(){
+    var dn=+document.getElementById("c-dn").value, m=+document.getElementById("c-m").value||0, h=+document.getElementById("c-h").value||0, lat=+document.getElementById("c-lat").value||0;
+    var lines=[];
+    if(dn&&m) lines.push(["Lining "+m+" m",dn*m]);
+    if(h) lines.push(["Crew "+h+" h @ $205",h*205]);
+    if(lat) lines.push(["Lateral reinstatement × "+lat,lat*420]);
+    if(document.getElementById("c-vac").checked) lines.push(["Vac truck",950]);
+    if(document.getElementById("c-dig").checked) lines.push(["Excavation subcontract",6500]);
+    if(document.getElementById("c-tm").checked) lines.push(["Traffic management",1200]);
+    var sub=lines.reduce(function(a,l){return a+l[1]},0);
+    document.getElementById("c-break").innerHTML=lines.length?lines.map(function(l){return '<dt>'+esc(l[0])+'</dt><dd class="num" style="text-align:right">'+money(l[1])+'</dd>'}).join(""):'<dt class="muted">Nothing added yet</dt><dd></dd>';
+    document.getElementById("c-total").textContent=money(sub);
+    return {sub:sub,lines:lines};
+  }
+  document.getElementById("vo-calc").addEventListener("input",calc);
+  document.getElementById("vo-calc").addEventListener("submit",function(e){
+    e.preventDefault(); var c=calc();
+    if(!c.sub){ toast("Add at least one cost line first"); return; }
+    var id="VO-26-0"+(nextVO++);
+    VO.unshift({id:id,job:"J26-0142",asset:"SW-1045",cause:document.getElementById("c-cause").value,val:c.sub,days:0,st:1,ev:["Photos and CCTV to attach from the field app"],lines:c.lines,time:"TBC"});
+    selVO=id; renderVO(); toast(id+" drafted and priced. Review, then send");
+    document.getElementById("vo-detail").scrollIntoView({behavior:"smooth"});
+  });
+  calc();
+
+  // ── Release 1 planner
+  var CAP=34;
+  var S=[
+    ["jobs","Jobs & pipe assets (MH-to-MH segments)","Everything else hangs off this.","m",5],
+    ["field","Offline field app: pre-start, permits, install log, photos","Without it, crews stay on paper and nothing else gets fed.","m",8],
+    ["qr","QR product tracking: receive → allocate → install","Your differentiator, and it has to start capturing from day one.","m",6],
+    ["hold","Hold points + QA pack PDF","Turns field records into proof for councils and faster payment.","m",4],
+    ["comp","Tickets & competencies with scheduling block","Legal duty: nobody unqualified in a confined space.","m",3,"law"],
+    ["inc","Incident, near-miss & good-catch reporting","Legal duty under HSWA, and cheap to build alongside the field app.","m",3,"law"],
+    ["diary","Auto daily site diary","Falls out of field data almost for free.","m",2],
+    ["var","Variations from the field","Protects margin straight away. Strong candidate to pull into release 1.","s",3],
+    ["claims","Progress claims + retentions + Xero","Big cash win, but needs the CCA check and Xero work first.","s",5,"law"],
+    ["board","Crew scheduling board","Replaces MS Project. Keep MS Project going for 3 more months.","s",5],
+    ["time","1-tap timesheets → payroll","Needs payroll integration decisions.","s",3],
+    ["plant","Plant & fleet maintenance","Valuable, not blocking.","s",3],
+    ["docs","Controlled SOPs, submittals & TQs","Keep using current doc storage for now.","s",4],
+    ["portal","Council portal","Best after release 1 has real data to show.","l",5],
+    ["dealer","ASOE dealer portal","Builds on the tracking spine once it's proven.","l",5],
+    ["ai","AI features (photo checks, voice diary, Ask PipeTech)","Needs clean data first.","l",5]
+  ];
+  var defaults={}; S.forEach(function(s){defaults[s[0]]=s[3]});
+  var choice={};
+  try{ choice=JSON.parse(localStorage.getItem("pt-scope")||"{}")||{}; }catch(e){ choice={}; }
+  function get(k){return choice[k]||defaults[k]}
+  function save(){ try{ localStorage.setItem("pt-scope",JSON.stringify(choice)); }catch(e){} }
+  var L={m:"Must",s:"Next",l:"Later"};
+  function renderScope(){
+    document.getElementById("scope-list").innerHTML=S.map(function(s){
+      var c=get(s[0]);
+      return '<div class="scope-item"><div><b>'+s[1]+'</b>'+(s[5]?'<span class="tag law">Compliance</span>':'')+'<span class="tag size">Size '+s[4]+'</span><p class="why">'+s[2]+(c!==s[3]?' <i>(I suggested '+L[s[3]]+')</i>':'')+'</p></div>'+
+        '<div class="seg" role="group" aria-label="'+esc(s[1])+'">'+["m","s","l"].map(function(o){return '<button type="button" class="'+o+'" data-k="'+s[0]+'" data-o="'+o+'" aria-pressed="'+(c===o)+'">'+L[o]+'</button>'}).join("")+'</div></div>';
+    }).join("");
+    var used=S.filter(function(s){return get(s[0])==="m"}).reduce(function(a,s){return a+s[4]},0);
+    var pct=Math.min(100,used/CAP*100);
+    var bar=document.getElementById("cap-bar"); bar.style.width=pct+"%"; bar.style.background=used>CAP?"var(--bad)":"var(--brand)";
+    document.getElementById("cap-txt").textContent=used+" of ~"+CAP+" points";
+    document.getElementById("cap-note").textContent=used>CAP?"Over budget: release 1 would run long. Move something to Next.":used<CAP-6?"Room to spare: you could pull something forward (variations is my pick).":"About right for a 3–4 month release 1. Sizes are rough relative effort, not quotes.";
+  }
+  document.getElementById("scope-list").addEventListener("click",function(e){
+    var b=e.target.closest("[data-o]"); if(!b) return;
+    choice[b.dataset.k]=b.dataset.o; save(); renderScope();
+  });
+  document.getElementById("scope-reset").addEventListener("click",function(){ choice={}; save(); renderScope(); toast("Back to my recommendation"); });
+  document.getElementById("scope-copy").addEventListener("click",function(){
+    var txt="Release 1 choices:\n"+["m","s","l"].map(function(o){return L[o]+": "+S.filter(function(s){return get(s[0])===o}).map(function(s){return s[1]}).join("; ")}).join("\n");
+    var done=function(){toast("Copied. Paste it back to Claude")};
+    try{ navigator.clipboard.writeText(txt).then(done,function(){fallback(txt)}); }catch(err){ fallback(txt); }
+  });
+  function fallback(txt){
+    var ta=document.createElement("textarea"); ta.value=txt; ta.setAttribute("aria-label","Your choices"); ta.style.marginTop="12px";
+    var p=document.getElementById("scope-list"); var old=document.getElementById("scope-out"); if(old) old.remove();
+    ta.id="scope-out"; p.parentNode.appendChild(ta); ta.select(); toast("Select and copy the text below");
+  }
+  renderScope();
 })();
 </script>

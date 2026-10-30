@@ -12,5 +12,6 @@ Analysis and design for replacing PipeTech's legacy web app (`pipetechnz.net/wor
 **Status:** Draft v0.1 for discussion. The live legacy app could not be reached from the build environment, so the current-system audit (DESIGN.md §1) needs finishing once access or screenshots are available.
 
 Changelog:
+- v0.3 (30 Oct 2026): prototype adds Safety (reporting with notifiable-event prompt, corrective actions, competency matrix, SDS), Variations (register, approval flow, pricing calculator), Release 1 planner (Must / Next / Later), field-app quick actions, and toasts on demo-only buttons.
 - v0.2 (28 Oct 2026): Procore/Simpro competitor analysis; blueprint scope updated (HSE, claims, variations, submittals, plant, performance budget).
 - v0.1 (28 Oct 2026): first blueprint, schema and prototype.
