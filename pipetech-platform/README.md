@@ -6,6 +6,7 @@ Analysis and design for replacing PipeTech's legacy web app (`pipetechnz.net/wor
 |---|---|
 | [`DESIGN.md`](./DESIGN.md) | The blueprint: current-system findings, personas, benchmarks, modules, supply-to-install tracking, architecture, KPIs, roadmap, budget, risks |
 | [`COMPETITOR-ANALYSIS.md`](./COMPETITOR-ANALYSIS.md) | Procore vs Simpro across project management, HR, HSE, documents, performance and options, plus the steal list for PipeTech OS |
+| [`HANDOFF-PROMPT.md`](./HANDOFF-PROMPT.md) | Brief to paste into another AI assistant or give a developer, with the files to attach |
 | [`schema.sql`](./schema.sql) | Starter PostgreSQL/PostGIS data model for jobs, assets and the traceability ledger |
 | [`prototype/index.html`](./prototype/index.html) | Clickable concept: Today dashboard, job board, product tracking, pipe passport, field app, council portal. Sample data only |
 
